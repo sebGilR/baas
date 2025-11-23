@@ -53,7 +53,7 @@ group :development do
   gem "debug", platforms: %i[mri windows], require: "debug/prelude"
   gem "rubocop", "~> 1.50", require: false
   gem "rubocop-rails", "~> 2.20", require: false
-  gem "rubocop-rspec", "~> 2.20", require: false
+  gem "rubocop-rspec", "~> 3.8", require: false
 end
 
 group :development, :test do
