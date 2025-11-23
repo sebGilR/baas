@@ -9,7 +9,7 @@
 ### **Framework & Structure**
 - ✅ **Rails 8 API-only** mode
 - ✅ **Hexagonal Architecture** with clear layer separation
-- ✅ **Rails Engines** for bounded contexts (`core/`, `publishing/`, `ai_assistant/`, `analytics/`)
+- ✅ **Namespaced modules** for bounded contexts (`Core::`, `Publishing::`, `AiAssistant::`, `Analytics::`)
 - ✅ **JSON:API v1.1** specification for all endpoints
 - ✅ **PostgreSQL** with **pgvector** extension
 
@@ -183,19 +183,30 @@ end
 
 ---
 
-## 🧩 **Rails Engine Boundaries**
+## 🧩 **Module Boundaries**
 
 ```
-engines/
-├── core/                    # User, Account, Auth (✅ DECIDED)
-├── publishing/              # Blog, Post, Draft, Tag (✅ DECIDED)
-├── ai_assistant/            # LLM, Embedding, Generation (✅ DECIDED)
-└── analytics/               # Metrics, Views, Reports (✅ DECIDED)
+app/
+├── models/
+│   ├── core/                    # User, Account, Auth (✅ DECIDED)
+│   ├── publishing/              # Blog, Post, Draft, Tag (✅ DECIDED)
+│   ├── ai_assistant/            # LLM, Embedding, Generation (✅ DECIDED)
+│   └── analytics/               # Metrics, Views, Reports (✅ DECIDED)
+├── services/
+│   ├── core/
+│   ├── publishing/
+│   ├── ai_assistant/
+│   └── analytics/
+└── policies/
+    ├── core/
+    ├── publishing/
+    ├── ai_assistant/
+    └── analytics/
 ```
 
-### **Engine Communication Rules**
-- ✅ **Decided**: Engines communicate via service objects
-- ✅ **Decided**: No direct model references across engines (use explicit `class_name`)
+### **Module Communication Rules**
+- ✅ **Decided**: Modules communicate via service objects
+- ✅ **Decided**: No direct model references across modules (use explicit `class_name`)
 - 🤔 **Undecided**: Domain events vs. direct service calls vs. pub/sub pattern
 
 ---

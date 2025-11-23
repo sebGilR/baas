@@ -1,0 +1,54 @@
+have_func: checking for rb_ext_ractor_safe() in ruby.h... -------------------- yes
+
+DYLD_LIBRARY_PATH=.:/Users/sebastiangil/.frum/versions/3.4.4/lib ASAN_OPTIONS=detect_leaks=0 "clang -o conftest -I/Users/sebastiangil/.frum/versions/3.4.4/include/ruby-3.4.0/x86_64-darwin24 -I/Users/sebastiangil/.frum/versions/3.4.4/include/ruby-3.4.0/ruby/backward -I/Users/sebastiangil/.frum/versions/3.4.4/include/ruby-3.4.0 -I. -I/usr/local/opt/openssl@3/include -D_XOPEN_SOURCE -D_DARWIN_C_SOURCE -D_DARWIN_UNLIMITED_SELECT -D_REENTRANT   -fstack-protector-strong -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -fdeclspec  -O3 -fno-fast-math -ggdb3 -Wall -Wextra -Wextra-tokens -Wdeprecated-declarations -Wdivision-by-zero -Wdiv-by-zero -Wimplicit-function-declaration -Wimplicit-int -Wpointer-arith -Wshorten-64-to-32 -Wwrite-strings -Wold-style-definition -Wmissing-noreturn -Wno-cast-function-type -Wno-constant-logical-operand -Wno-long-long -Wno-missing-field-initializers -Wno-overlength-strings -Wno-parentheses-equality -Wno-self-assign -Wno-tautological-compare -Wno-unused-parameter -Wno-unused-value -Wunused-variable -Wmisleading-indentation -Wundef  -pipe conftest.c -L. -L/Users/sebastiangil/.frum/versions/3.4.4/lib -L. -L/usr/local/opt/openssl@3/lib -fstack-protector-strong     -lruby.3.4-static -framework CoreFoundation -lgmp -ldl -lobjc -lpthread   -lpthread  "
+ld: warning: ignoring duplicate libraries: '-lpthread'
+checked program was:
+/* begin */
+1: #include "ruby.h"
+2: 
+3: int main(int argc, char **argv)
+4: {
+5:   return !!argv[argc];
+6: }
+/* end */
+
+DYLD_LIBRARY_PATH=.:/Users/sebastiangil/.frum/versions/3.4.4/lib ASAN_OPTIONS=detect_leaks=0 "clang -o conftest -I/Users/sebastiangil/.frum/versions/3.4.4/include/ruby-3.4.0/x86_64-darwin24 -I/Users/sebastiangil/.frum/versions/3.4.4/include/ruby-3.4.0/ruby/backward -I/Users/sebastiangil/.frum/versions/3.4.4/include/ruby-3.4.0 -I. -I/usr/local/opt/openssl@3/include -D_XOPEN_SOURCE -D_DARWIN_C_SOURCE -D_DARWIN_UNLIMITED_SELECT -D_REENTRANT   -fstack-protector-strong -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -fdeclspec  -O3 -fno-fast-math -ggdb3 -Wall -Wextra -Wextra-tokens -Wdeprecated-declarations -Wdivision-by-zero -Wdiv-by-zero -Wimplicit-function-declaration -Wimplicit-int -Wpointer-arith -Wshorten-64-to-32 -Wwrite-strings -Wold-style-definition -Wmissing-noreturn -Wno-cast-function-type -Wno-constant-logical-operand -Wno-long-long -Wno-missing-field-initializers -Wno-overlength-strings -Wno-parentheses-equality -Wno-self-assign -Wno-tautological-compare -Wno-unused-parameter -Wno-unused-value -Wunused-variable -Wmisleading-indentation -Wundef  -pipe conftest.c -L. -L/Users/sebastiangil/.frum/versions/3.4.4/lib -L. -L/usr/local/opt/openssl@3/lib -fstack-protector-strong     -lruby.3.4-static -framework CoreFoundation -lgmp -ldl -lobjc -lpthread   -lpthread  "
+ld: warning: ignoring duplicate libraries: '-lpthread'
+warning: (x86_64) /Users/sebastiangil/.frum/versions/.downloads/.tmpvLcDAE/ruby-3.4.4/yjit/target/release/libyjit.a(yjit.yjit.28cdda9d65f69be0-cgu.00.rcgu.o) unable to open object file: No such file or directory
+warning: (x86_64) /Users/sebastiangil/.frum/versions/.downloads/.tmpvLcDAE/ruby-3.4.4/yjit/target/release/libyjit.a(yjit.yjit.28cdda9d65f69be0-cgu.01.rcgu.o) unable to open object file: No such file or directory
+warning: (x86_64) /Users/sebastiangil/.frum/versions/.downloads/.tmpvLcDAE/ruby-3.4.4/yjit/target/release/libyjit.a(yjit.yjit.28cdda9d65f69be0-cgu.02.rcgu.o) unable to open object file: No such file or directory
+warning: (x86_64) /Users/sebastiangil/.frum/versions/.downloads/.tmpvLcDAE/ruby-3.4.4/yjit/target/release/libyjit.a(yjit.yjit.28cdda9d65f69be0-cgu.03.rcgu.o) unable to open object file: No such file or directory
+warning: (x86_64) /Users/sebastiangil/.frum/versions/.downloads/.tmpvLcDAE/ruby-3.4.4/yjit/target/release/libyjit.a(yjit.yjit.28cdda9d65f69be0-cgu.04.rcgu.o) unable to open object file: No such file or directory
+warning: (x86_64) /Users/sebastiangil/.frum/versions/.downloads/.tmpvLcDAE/ruby-3.4.4/yjit/target/release/libyjit.a(yjit.yjit.28cdda9d65f69be0-cgu.05.rcgu.o) unable to open object file: No such file or directory
+warning: (x86_64) /Users/sebastiangil/.frum/versions/.downloads/.tmpvLcDAE/ruby-3.4.4/yjit/target/release/libyjit.a(yjit.yjit.28cdda9d65f69be0-cgu.06.rcgu.o) unable to open object file: No such file or directory
+warning: (x86_64) /Users/sebastiangil/.frum/versions/.downloads/.tmpvLcDAE/ruby-3.4.4/yjit/target/release/libyjit.a(yjit.yjit.28cdda9d65f69be0-cgu.07.rcgu.o) unable to open object file: No such file or directory
+warning: (x86_64) /Users/sebastiangil/.frum/versions/.downloads/.tmpvLcDAE/ruby-3.4.4/yjit/target/release/libyjit.a(yjit.yjit.28cdda9d65f69be0-cgu.08.rcgu.o) unable to open object file: No such file or directory
+warning: (x86_64) /Users/sebastiangil/.frum/versions/.downloads/.tmpvLcDAE/ruby-3.4.4/yjit/target/release/libyjit.a(yjit.yjit.28cdda9d65f69be0-cgu.09.rcgu.o) unable to open object file: No such file or directory
+warning: (x86_64) /Users/sebastiangil/.frum/versions/.downloads/.tmpvLcDAE/ruby-3.4.4/yjit/target/release/libyjit.a(yjit.yjit.28cdda9d65f69be0-cgu.10.rcgu.o) unable to open object file: No such file or directory
+warning: (x86_64) /Users/sebastiangil/.frum/versions/.downloads/.tmpvLcDAE/ruby-3.4.4/yjit/target/release/libyjit.a(yjit.yjit.28cdda9d65f69be0-cgu.11.rcgu.o) unable to open object file: No such file or directory
+warning: (x86_64) /Users/sebastiangil/.frum/versions/.downloads/.tmpvLcDAE/ruby-3.4.4/yjit/target/release/libyjit.a(yjit.yjit.28cdda9d65f69be0-cgu.12.rcgu.o) unable to open object file: No such file or directory
+warning: (x86_64) /Users/sebastiangil/.frum/versions/.downloads/.tmpvLcDAE/ruby-3.4.4/yjit/target/release/libyjit.a(yjit.yjit.28cdda9d65f69be0-cgu.13.rcgu.o) unable to open object file: No such file or directory
+warning: (x86_64) /Users/sebastiangil/.frum/versions/.downloads/.tmpvLcDAE/ruby-3.4.4/yjit/target/release/libyjit.a(yjit.yjit.28cdda9d65f69be0-cgu.14.rcgu.o) unable to open object file: No such file or directory
+warning: (x86_64) /Users/sebastiangil/.frum/versions/.downloads/.tmpvLcDAE/ruby-3.4.4/yjit/target/release/libyjit.a(yjit.yjit.28cdda9d65f69be0-cgu.15.rcgu.o) unable to open object file: No such file or directory
+checked program was:
+/* begin */
+ 1: #include "ruby.h"
+ 2: 
+ 3: #include <ruby.h>
+ 4: 
+ 5: /*top*/
+ 6: extern int t(void);
+ 7: int main(int argc, char **argv)
+ 8: {
+ 9:   if (argc > 1000000) {
+10:     int (* volatile tp)(void)=(int (*)(void))&t;
+11:     printf("%d", (*tp)());
+12:   }
+13: 
+14:   return !!argv[argc];
+15: }
+16: int t(void) { void ((*volatile p)()); p = (void ((*)()))rb_ext_ractor_safe; return !p; }
+/* end */
+
+--------------------
+

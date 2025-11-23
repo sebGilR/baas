@@ -1,0 +1,19 @@
+current directory: /Users/sebastiangil/workspace/baas/vendor/bundle/ruby/3.4.0/gems/debug-1.11.0/ext/debug
+/Users/sebastiangil/.frum/versions/3.4.4/bin/ruby extconf.rb
+creating Makefile
+
+current directory: /Users/sebastiangil/workspace/baas/vendor/bundle/ruby/3.4.0/gems/debug-1.11.0/ext/debug
+make DESTDIR\= sitearchdir\=./.gem.20251122-61692-me6lpu sitelibdir\=./.gem.20251122-61692-me6lpu clean
+
+current directory: /Users/sebastiangil/workspace/baas/vendor/bundle/ruby/3.4.0/gems/debug-1.11.0/ext/debug
+make DESTDIR\= sitearchdir\=./.gem.20251122-61692-me6lpu sitelibdir\=./.gem.20251122-61692-me6lpu
+compiling debug.c
+compiling iseq_collector.c
+linking shared-object debug/debug.bundle
+
+current directory: /Users/sebastiangil/workspace/baas/vendor/bundle/ruby/3.4.0/gems/debug-1.11.0/ext/debug
+make DESTDIR\= sitearchdir\=./.gem.20251122-61692-me6lpu sitelibdir\=./.gem.20251122-61692-me6lpu install
+/usr/local/bin/ginstall -c -m 0755 debug.bundle ./.gem.20251122-61692-me6lpu/debug
+
+current directory: /Users/sebastiangil/workspace/baas/vendor/bundle/ruby/3.4.0/gems/debug-1.11.0/ext/debug
+make DESTDIR\= sitearchdir\=./.gem.20251122-61692-me6lpu sitelibdir\=./.gem.20251122-61692-me6lpu clean

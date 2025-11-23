@@ -1,0 +1,18 @@
+current directory: /Users/sebastiangil/workspace/baas/vendor/bundle/ruby/3.4.0/gems/racc-1.8.1/ext/racc/cparse
+/Users/sebastiangil/.frum/versions/3.4.4/bin/ruby extconf.rb
+creating Makefile
+
+current directory: /Users/sebastiangil/workspace/baas/vendor/bundle/ruby/3.4.0/gems/racc-1.8.1/ext/racc/cparse
+make DESTDIR\= sitearchdir\=./.gem.20251122-61692-volnsr sitelibdir\=./.gem.20251122-61692-volnsr clean
+
+current directory: /Users/sebastiangil/workspace/baas/vendor/bundle/ruby/3.4.0/gems/racc-1.8.1/ext/racc/cparse
+make DESTDIR\= sitearchdir\=./.gem.20251122-61692-volnsr sitelibdir\=./.gem.20251122-61692-volnsr
+compiling cparse.c
+linking shared-object racc/cparse.bundle
+
+current directory: /Users/sebastiangil/workspace/baas/vendor/bundle/ruby/3.4.0/gems/racc-1.8.1/ext/racc/cparse
+make DESTDIR\= sitearchdir\=./.gem.20251122-61692-volnsr sitelibdir\=./.gem.20251122-61692-volnsr install
+/usr/local/bin/ginstall -c -m 0755 cparse.bundle ./.gem.20251122-61692-volnsr/racc
+
+current directory: /Users/sebastiangil/workspace/baas/vendor/bundle/ruby/3.4.0/gems/racc-1.8.1/ext/racc/cparse
+make DESTDIR\= sitearchdir\=./.gem.20251122-61692-volnsr sitelibdir\=./.gem.20251122-61692-volnsr clean
