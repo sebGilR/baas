@@ -1,36 +1,34 @@
 # syntax=docker/dockerfile:1
 # check=error=true
 
-# This Dockerfile is designed for production, not development. Use with Kamal or build'n'run by hand:
-# docker build -t baas .
-# docker run -d -p 80:80 -e RAILS_MASTER_KEY=<value from config/master.key> --name baas baas
-
-# For a containerized dev environment, see Dev Containers: https://guides.rubyonrails.org/getting_started_with_devcontainer.html
+# This Dockerfile is optimized for OrbStack development with Rails 8 API
+# Build: docker build -t baas .
+# Run: docker compose up
 
 # Make sure RUBY_VERSION matches the Ruby version in .ruby-version
-ARG RUBY_VERSION=3.4.4
+ARG RUBY_VERSION=3.3.7
 FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
 
 # Rails app lives here
 WORKDIR /rails
 
-# Install base packages
+# Install base packages (added libvips for image processing)
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libjemalloc2 postgresql-client && \
+    apt-get install --no-install-recommends -y curl libjemalloc2 libvips postgresql-client && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
-# Set production environment
-ENV RAILS_ENV="production" \
-    BUNDLE_DEPLOYMENT="1" \
+# Set development environment for OrbStack
+ENV RAILS_ENV="development" \
+    BUNDLE_DEPLOYMENT="0" \
     BUNDLE_PATH="/usr/local/bundle" \
-    BUNDLE_WITHOUT="development"
+    BUNDLE_WITHOUT=""
 
 # Throw-away build stage to reduce size of final image
 FROM base AS build
 
 # Install packages needed to build gems
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential git libpq-dev libyaml-dev pkg-config && \
+    apt-get install --no-install-recommends -y build-essential git libpq-dev pkg-config && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Install application gems
