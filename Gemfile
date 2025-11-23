@@ -48,7 +48,7 @@ gem "rack-cors", "~> 3.0"
 gem "tzinfo-data", platforms: %i[windows jruby]
 
 group :development do
-  gem "brakeman", "~> 6.0", require: false
+  gem "brakeman", "~> 7.1", require: false
   gem "bundler-audit", "~> 0.9", require: false
   gem "debug", platforms: %i[mri windows], require: "debug/prelude"
   gem "rubocop", "~> 1.50", require: false
