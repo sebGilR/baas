@@ -7,6 +7,9 @@ Rails.application.routes.draw do
   # API v1 routes
   namespace :api do
     namespace :v1 do
+      # Health check endpoint
+      get "health", to: "health#show"
+
       # Authentication routes
       post "auth/login", to: "authentication#login"
       post "auth/register", to: "authentication#register"
