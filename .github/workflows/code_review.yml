@@ -17,12 +17,11 @@ jobs:
       - name: Get PR Diff
         id: get_diff
         run: |
-          {
-            echo 'diff<<EOF'
-            git diff ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }}
-            echo 'EOF'
-          } >> "$GITHUB_OUTPUT"
-
+                  {
+                    echo 'diff<<EOF'
+                    git diff ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }}
+                    echo 'EOF'
+                  } >> "$GITHUB_OUTPUT"
       - name: Run Gemini CLI for Code Review
         uses: google-github-actions/run-gemini-cli@main
         with:
