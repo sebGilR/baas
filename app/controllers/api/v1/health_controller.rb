@@ -1,3 +1,4 @@
+# This is a test comment to trigger the code review workflow.
 module Api
   module V1
     class HealthController < ApplicationController
