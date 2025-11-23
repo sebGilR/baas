@@ -6,7 +6,7 @@ ruby "~> 3.4.0"
 
 # Rails & Core
 gem "pg", "~> 1.5"
-gem "puma", "~> 6.0"
+gem "puma", "~> 7.1"
 gem "rails", "~> 8.0.0"
 
 # API & Serialization
