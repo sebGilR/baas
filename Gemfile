@@ -18,7 +18,7 @@ gem "acts_as_tenant", "~> 1.0"
 
 # Authentication & Authorization
 gem "bcrypt", "~> 3.1"
-gem "jwt", "~> 2.7"
+gem "jwt", "~> 3.1"
 
 # Background Jobs
 gem "solid_queue", "~> 0.3"
