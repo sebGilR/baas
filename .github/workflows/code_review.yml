@@ -1,0 +1,43 @@
+name: Gemini Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  code-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get PR Diff
+        id: get_diff
+        run: echo "diff=$(git diff ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})" >> $GITHUB_OUTPUT
+
+      - name: Run Gemini CLI for Code Review
+        uses: garronej/run-gemini-cli@main
+        with:
+          gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
+          prompt: |
+            You are a senior software engineer performing a code review on this pull request.
+            Please analyze the changes in the following diff and provide feedback.
+            Focus on:
+            - Code quality and best practices.
+            - Potential bugs or security vulnerabilities.
+            - Adherence to the project's conventions (see GEMINI.md for context).
+            - Suggest improvements and alternatives where applicable.
+            - Keep your feedback concise and actionable.
+            - Do not comment on documentation changes.
+            - Do not comment on test files.
+            - Do not comment on markdown files.
+
+            The project is a Ruby on Rails 8 API.
+            The GEMINI.md file is available in the repository for context.
+
+            Here is the diff of the pull request:
+            ```diff
+            ${{ steps.get_diff.outputs.diff }}
+            ```
