@@ -29,32 +29,32 @@ The recommended way to work with this project is using Docker.
 
 ### Docker (Recommended)
 
-The `bin/dev-docker` script is a wrapper around `docker compose` and provides a set of commands for managing the development environment.
+The `bin/baas` script is a wrapper around `docker compose` and provides a set of commands for managing the development environment.
 
 *   **Start the application:**
     ```bash
-    bin/dev-docker up
+    baas up
     ```
     The application will be available at `http://localhost:3000`.
 
 *   **Stop the application:**
     ```bash
-    bin/dev-docker down
+    baas down
     ```
 
 *   **Run tests:**
     ```bash
-    bin/dev-docker test
+    baas test
     ```
 
 *   **Run migrations:**
     ```bash
-    bin/dev-docker migrate
+    baas migrate
     ```
 
 *   **Open a Rails console:**
     ```bash
-    bin/dev-docker console
+    baas console
     ```
 
 ### Local Development

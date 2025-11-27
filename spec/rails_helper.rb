@@ -9,6 +9,8 @@ abort("The Rails environment is running in production mode!") if Rails.env.produ
 require "rspec/rails"
 require "database_cleaner/active_record"
 require "shoulda/matchers"
+require "factory_bot_rails"
+require "faker"
 
 # Add additional requires below this line. Rails is not loaded until this point!
 
@@ -35,6 +37,9 @@ rescue ActiveRecord::PendingMigrationError => e
   abort e.to_s.strip
 end
 RSpec.configure do |config|
+  config.include FactoryBot::Syntax::Methods
+  config.include ActiveSupport::Testing::TimeHelpers
+
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_paths = [
     Rails.root.join("spec/fixtures")
@@ -70,6 +75,7 @@ RSpec.configure do |config|
 
   # Database Cleaner configuration
   config.before(:suite) do
+    DatabaseCleaner.allow_remote_database_url = true
     DatabaseCleaner.clean_with(:truncation)
   end
 

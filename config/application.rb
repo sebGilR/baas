@@ -43,6 +43,9 @@ module Baas
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
 
+    # Use SQL for schema format to support advanced PostgreSQL features
+    config.active_record.schema_format = :sql
+
     # Middleware for API functionality
     config.middleware.use Rack::MethodOverride
     config.middleware.use ActionDispatch::Cookies

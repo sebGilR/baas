@@ -17,10 +17,14 @@ RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y curl libjemalloc2 libvips postgresql-client && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
+# Create a non-root user to run the app
+RUN groupadd --system --gid 1000 rails && \
+    useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash
+
 # Set development environment for OrbStack
 ENV RAILS_ENV="development" \
     BUNDLE_DEPLOYMENT="0" \
-    BUNDLE_PATH="/usr/local/bundle" \
+    BUNDLE_PATH="/home/rails/bundle" \
     BUNDLE_WITHOUT=""
 
 # Throw-away build stage to reduce size of final image
@@ -30,6 +34,10 @@ FROM base AS build
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y build-essential git libpq-dev pkg-config libyaml-dev && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
+
+# Create bundle directory and switch user
+RUN mkdir -p /home/rails/bundle && chown -R rails:rails /home/rails/bundle
+USER 1000:1000
 
 # Install application gems
 COPY Gemfile Gemfile.lock ./
@@ -44,19 +52,14 @@ COPY . .
 RUN bundle exec bootsnap precompile app/ lib/
 
 
-
-
 # Final stage for app image
 FROM base
 
 # Copy built artifacts: gems, application
-COPY --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
-COPY --from=build /rails /rails
+COPY --from=build --chown=1000:1000 "${BUNDLE_PATH}" "${BUNDLE_PATH}"
+COPY --from=build --chown=1000:1000 /rails /rails
 
 # Run and own only the runtime files as a non-root user for security
-RUN groupadd --system --gid 1000 rails && \
-    useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash && \
-    chown -R rails:rails db log tmp
 USER 1000:1000
 
 # Entrypoint prepares the database.

@@ -13,7 +13,7 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 function print_usage() {
-  echo "Usage: bin/dev-docker [command]"
+  echo "Usage: baas [command]"
   echo ""
   echo "Commands:"
   echo "  up              Start all services"
@@ -27,6 +27,7 @@ function print_usage() {
   echo "  redis-cli       Open Redis CLI"
   echo "  test [path]     Run RSpec tests"
   echo "  rubocop         Run RuboCop linter"
+  echo "  bundle          Run bundle install"
   echo "  migrate         Run pending migrations"
   echo "  rollback        Rollback last migration"
   echo "  db:reset        Reset database"
@@ -107,16 +108,22 @@ case "$1" in
     shift
     if [ -z "$1" ]; then
       info "Running all tests..."
-      $COMPOSE_CMD exec web bin/rspec
+      $COMPOSE_CMD exec web bundle exec rspec
     else
       info "Running tests: $1"
-      $COMPOSE_CMD exec web bin/rspec "$1"
+      $COMPOSE_CMD exec web bundle exec rspec "$@"
     fi
     ;;
   
   rubocop)
     info "Running RuboCop..."
     $COMPOSE_CMD exec web bundle exec rubocop
+    ;;
+  
+  bundle)
+    info "Running bundle install..."
+    $COMPOSE_CMD exec web bundle install
+    success "Bundle complete"
     ;;
   
   migrate)

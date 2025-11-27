@@ -46,12 +46,14 @@ services:
     environment:
       RAILS_ENV: development
       DATABASE_URL: postgres://postgres:postgres@db:5432/baas_development
+      DATABASE_HOST: db
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
       REDIS_URL: redis://redis:6379/0
       RAILS_LOG_TO_STDOUT: "true"
       RAILS_SERVE_STATIC_FILES: "true"
     volumes:
       - .:/rails
-      - bundle_cache:/usr/local/bundle
       - rails_cache:/rails/tmp/cache
       - rails_storage:/rails/storage
     ports:
@@ -67,6 +69,5 @@ services:
 volumes:
   postgres_data:
   redis_data:
-  bundle_cache:
   rails_cache:
   rails_storage:
