@@ -10,23 +10,29 @@ module Api
       private
 
       def not_found(exception)
-        render json: {
-          errors: [{
-            status: '404',
-            title: 'Not Found',
-            detail: exception.message
-          }]
-        }, status: :not_found
+        render(
+          json: {
+            errors: [{
+              status: "404",
+              title: "Not Found",
+              detail: exception.message,
+            }],
+          },
+          status: :not_found,
+        )
       end
 
       def unprocessable_entity(exception)
-        render json: {
-          errors: [{
-            status: '422',
-            title: 'Unprocessable Entity',
-            detail: exception.message
-          }]
-        }, status: :unprocessable_entity
+        render(
+          json: {
+            errors: [{
+              status: "422",
+              title: "Unprocessable Entity",
+              detail: exception.message,
+            }],
+          },
+          status: :unprocessable_content,
+        )
       end
 
       # Returns the current authenticated user
@@ -46,13 +52,18 @@ module Api
       def authenticate_user!
         # TODO: Implement JWT authentication
         # For now, return unauthorized
-        render json: {
-          errors: [{
-            status: '401',
-            title: 'Unauthorized',
-            detail: 'You must be authenticated to access this resource.'
-          }]
-        }, status: :unauthorized unless current_user
+        return if current_user
+
+        render(
+          json: {
+            errors: [{
+              status: "401",
+              title: "Unauthorized",
+              detail: "You must be authenticated to access this resource.",
+            }],
+          },
+          status: :unauthorized,
+        )
       end
 
       # Helper to authorize collection with tenant scoping

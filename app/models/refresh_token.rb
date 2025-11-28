@@ -12,8 +12,8 @@ class RefreshToken < ApplicationRecord
   validates :expires_at, presence: true
 
   # Scopes
-  scope :active, -> { where(revoked_at: nil).where('expires_at > ?', Time.current) }
-  scope :expired, -> { where('expires_at <= ?', Time.current) }
+  scope :active, -> { where(revoked_at: nil).where("expires_at > ?", Time.current) }
+  scope :expired, -> { where(expires_at: ..Time.current) }
   scope :revoked, -> { where.not(revoked_at: nil) }
 
   # Instance Methods

@@ -13,15 +13,15 @@ Rails.application.routes.draw do
 
       # Authentication routes
       namespace :auth do
-        post 'register', to: 'registrations#create'
-        post 'login', to: 'sessions#create'
-        post 'refresh', to: 'refresh_tokens#create'
-        delete 'logout', to: 'refresh_tokens#destroy'
+        post "register", to: "registrations#create"
+        post "login", to: "sessions#create"
+        post "refresh", to: "refresh_tokens#create"
+        delete "logout", to: "refresh_tokens#destroy"
       end
 
       # Core resources
-      resources :accounts, only: %i[index show create update]
-      resources :users, only: %i[index show update]
+      resources :accounts, only: [:index, :show, :create, :update]
+      resources :users, only: [:index, :show, :update]
 
       # Publishing resources
       resources :blogs
@@ -40,7 +40,7 @@ Rails.application.routes.draw do
       # Analytics resources
       namespace :analytics do
         get "dashboard", to: "dashboard#show"
-        resources :reports, only: %i[index show]
+        resources :reports, only: [:index, :show]
       end
     end
   end

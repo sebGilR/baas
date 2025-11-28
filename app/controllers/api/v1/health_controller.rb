@@ -7,30 +7,30 @@ module Api
       skip_before_action :authenticate_user!
 
       def show
-        render json: {
-          status: 'ok',
+        render(json: {
+          status: "ok",
           timestamp: Time.current.iso8601,
           environment: Rails.env,
-          version: '1.0.0',
+          version: "1.0.0",
           services: {
             database: database_status,
-            redis: redis_status
-          }
-        }
+            redis: redis_status,
+          },
+        })
       end
 
       private
 
       def database_status
-        ActiveRecord::Base.connection.execute('SELECT 1')
-        'connected'
+        ActiveRecord::Base.connection.execute("SELECT 1")
+        "connected"
       rescue StandardError => e
         { error: e.message }
       end
 
       def redis_status
         # Redis check will be implemented when we configure Redis
-        'not configured'
+        "not configured"
       rescue StandardError => e
         { error: e.message }
       end

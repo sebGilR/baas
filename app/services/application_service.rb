@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
 class ApplicationService
-  def self.call(*args, **kwargs, &block)
-    new(*args, **kwargs).call(&block)
+  class << self
+    def call(*, **, &)
+      new(*, **).call(&)
+    end
   end
 
   def call

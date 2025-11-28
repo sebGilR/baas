@@ -9,13 +9,13 @@ module Core
 
       def call
         payload = decode_token
-        return failure(errors: 'Invalid token') unless payload
+        return failure(errors: "Invalid token") unless payload
 
         success(payload: payload)
       rescue JWT::ExpiredSignature
-        failure(errors: 'Token has expired')
+        failure(errors: "Token has expired")
       rescue JWT::DecodeError
-        failure(errors: 'Invalid token')
+        failure(errors: "Invalid token")
       end
 
       private
@@ -23,7 +23,7 @@ module Core
       attr_reader :token
 
       def decode_token
-        JWT.decode(token, jwt_secret, true, { algorithm: 'HS256' }).first
+        JWT.decode(token, jwt_secret, true, { algorithm: "HS256" }).first
       end
 
       def jwt_secret

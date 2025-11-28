@@ -6,7 +6,7 @@ module Api
       skip_before_action :authenticate_user!
 
       def show
-        render json: { message: 'hello' }
+        render(json: { message: "hello" })
       end
     end
   end

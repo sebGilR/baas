@@ -9,12 +9,15 @@ class ApplicationController < ActionController::API
   private
 
   def user_not_authorized
-    render json: {
-      errors: [{
-        status: "403",
-        title: "Forbidden",
-        detail: "You are not authorized to perform this action."
-      }]
-    }, status: :forbidden
+    render(
+      json: {
+        errors: [{
+          status: "403",
+          title: "Forbidden",
+          detail: "You are not authorized to perform this action.",
+        }],
+      },
+      status: :forbidden,
+    )
   end
 end

@@ -2,6 +2,7 @@
 
 class User < ApplicationRecord
   include PublicIdentifiable
+
   has_secure_password
 
   # Associations

@@ -24,10 +24,10 @@ module Core
           email: user.email,
           role: user.role_for_account(account),
           exp: 30.minutes.from_now.to_i,
-          iat: Time.current.to_i
+          iat: Time.current.to_i,
         }
 
-        JWT.encode(payload, jwt_secret, 'HS256')
+        JWT.encode(payload, jwt_secret, "HS256")
       end
 
       def jwt_secret

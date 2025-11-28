@@ -11,11 +11,11 @@ module Core
 
       def call
         user = find_user
-        return failure(errors: 'Invalid email or password') unless user
-        return failure(errors: 'Invalid email or password') unless user.authenticate(password)
+        return failure(errors: "Invalid email or password") unless user
+        return failure(errors: "Invalid email or password") unless user.authenticate(password)
 
         account = user.primary_account
-        return failure(errors: 'No account found') unless account
+        return failure(errors: "No account found") unless account
 
         tokens = generate_tokens(user, account)
 
@@ -24,7 +24,7 @@ module Core
           account: account,
           access_token: tokens[:access_token],
           refresh_token: tokens[:refresh_token],
-          expires_in: 1800
+          expires_in: 1800,
         )
       end
 
@@ -49,12 +49,12 @@ module Core
           jti: jti,
           token_digest: Digest::SHA256.hexdigest(refresh_token),
           expires_at: 30.days.from_now,
-          device_info: device_info
+          device_info: device_info,
         )
 
         {
           access_token: access_result.data.access_token,
-          refresh_token: refresh_token
+          refresh_token: refresh_token,
         }
       end
     end

@@ -316,6 +316,8 @@ GEM
     rubocop-rspec (3.8.0)
       lint_roller (~> 1.1)
       rubocop (~> 1.81)
+    rubocop-shopify (2.18.0)
+      rubocop (~> 1.62)
     ruby-progressbar (1.13.0)
     securerandom (0.4.1)
     shoulda-matchers (7.0.1)
@@ -391,6 +393,7 @@ DEPENDENCIES
   rubocop (~> 1.50)
   rubocop-rails (~> 2.20)
   rubocop-rspec (~> 3.8)
+  rubocop-shopify
   shoulda-matchers (~> 7.0)
   solid_queue (~> 1.2)
   thruster

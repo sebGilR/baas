@@ -9,11 +9,11 @@ module Core
 
       def call
         token_record = find_token_record
-        return failure(errors: 'Invalid refresh token') unless token_record
+        return failure(errors: "Invalid refresh token") unless token_record
 
         token_record.revoke!
 
-        success(message: 'Logged out successfully')
+        success(message: "Logged out successfully")
       end
 
       private

@@ -45,15 +45,16 @@ gem "thruster", require: false
 gem "rack-cors", "~> 3.0"
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
-gem "tzinfo-data", platforms: %i[windows jruby]
+gem "tzinfo-data", platforms: [:windows, :jruby]
 
 group :development do
   gem "brakeman", "~> 7.1", require: false
   gem "bundler-audit", "~> 0.9", require: false
-  gem "debug", platforms: %i[mri windows], require: "debug/prelude"
+  gem "debug", platforms: [:mri, :windows], require: "debug/prelude"
   gem "rubocop", "~> 1.50", require: false
   gem "rubocop-rails", "~> 2.20", require: false
   gem "rubocop-rspec", "~> 3.8", require: false
+  gem "rubocop-shopify", require: false
 end
 
 group :development, :test do
