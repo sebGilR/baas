@@ -1,0 +1,96 @@
+meta {
+  name: 01 - Register
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/api/v1/auth/register
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "data": {
+      "type": "authentication",
+      "attributes": {
+        "email": "newuser2@example.com",
+        "password": "Password123!",
+        "name": "New User",
+        "account_name": "My First Blog"
+      }
+    }
+  }
+}
+
+vars:post-response {
+  access_token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0NTk5ZTE0MC05YWJmLTQ4NzEtOWU2OC0wZGU3YjllMDAxM2EiLCJhY2NvdW50X2lkIjoiMTkzMWFkYTktZjE5My00NThjLWE2NmItZTM3MDY1Y2JiNDA1IiwiZW1haWwiOiJuZXd1c2VyMkBleGFtcGxlLmNvbSIsInJvbGUiOiJvd25lciIsImV4cCI6MTc2NDMwMDY5NSwiaWF0IjoxNzY0Mjk4ODk1fQ.9bWoNHqdn60QYEpq4jFkGHOYisll_kJzfLSizTBrdOg
+  refresh_token: YKQtUtezUTE6XW1CFm0SFrWC5HttYlwXjbRQmPOsAo8
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+    const body = res.getBody();
+    bru.setEnvVar("access_token", body.data.attributes.access_token);
+    bru.setEnvVar("refresh_token", body.data.attributes.refresh_token);
+  }
+}
+
+tests {
+  test("Status is 201 Created", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Response contains access_token", function() {
+    expect(res.getBody().data.attributes.access_token).to.be.a('string');
+  });
+  
+  test("Response contains refresh_token", function() {
+    expect(res.getBody().data.attributes.refresh_token).to.be.a('string');
+  });
+  
+  test("Response contains user data", function() {
+    expect(res.getBody().data.attributes.user).to.have.property('email');
+    expect(res.getBody().data.attributes.user).to.have.property('name');
+  });
+  
+  test("Response contains account data", function() {
+    expect(res.getBody().data.attributes.account).to.have.property('name');
+    expect(res.getBody().data.attributes.account).to.have.property('slug');
+  });
+  
+  test("Token type is Bearer", function() {
+    expect(res.getBody().data.attributes.token_type).to.equal('Bearer');
+  });
+}
+
+docs {
+  # Register New User
+  
+  Creates a new user account along with:
+  - A new Account (tenant)
+  - An AccountMembership with owner role
+  - JWT access token (expires in 30 minutes)
+  - Refresh token (expires in 30 days)
+  
+  ## Request Body (JSON:API format)
+  
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | email | string | Yes | Valid email address |
+  | password | string | Yes | Minimum 8 characters |
+  | name | string | Yes | User's display name (min 2 chars) |
+  | account_name | string | No | Account name (defaults to "{name}'s Account") |
+  
+  ## Response
+  
+  Returns user, account, and authentication tokens.
+  
+  **No authentication required**
+}

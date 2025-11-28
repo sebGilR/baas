@@ -1,0 +1,42 @@
+meta {
+  name: Health Check
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/api/v1/health
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+docs {
+  # Health Check Endpoint
+  
+  Returns the health status of the API including:
+  - Database connection status
+  - Redis connection status (when configured)
+  - Current environment
+  - API version
+  
+  **No authentication required**
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response contains status ok", function() {
+    expect(res.getBody().status).to.equal("ok");
+  });
+  
+  test("Database is connected", function() {
+    expect(res.getBody().services.database).to.equal("connected");
+  });
+}

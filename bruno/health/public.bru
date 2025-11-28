@@ -1,0 +1,30 @@
+meta {
+  name: Public Endpoint
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url}}/api/v1/public
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+docs {
+  # Public Endpoint
+  
+  A simple public endpoint for testing API connectivity.
+  
+  **No authentication required**
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+}

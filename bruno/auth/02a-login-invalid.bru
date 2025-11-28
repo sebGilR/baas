@@ -1,0 +1,48 @@
+meta {
+  name: 02a - Login (Invalid Credentials)
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{base_url}}/api/v1/auth/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "data": {
+      "type": "authentication",
+      "attributes": {
+        "email": "newuser@example.com",
+        "password": "WrongPassword123!"
+      }
+    }
+  }
+}
+
+docs {
+  # Login - Invalid Credentials Test
+  
+  Tests that the API returns 401 Unauthorized for invalid credentials.
+  
+  **Expected Result**: 401 Unauthorized
+}
+
+tests {
+  test("Status is 401 Unauthorized", function() {
+    expect(res.getStatus()).to.equal(401);
+  });
+  
+  test("Response contains error", function() {
+    expect(res.getBody().errors).to.be.an('array');
+    expect(res.getBody().errors[0].status).to.equal('401');
+    expect(res.getBody().errors[0].title).to.equal('Authentication Failed');
+  });
+}

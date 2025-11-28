@@ -1,0 +1,90 @@
+meta {
+  name: 03 - Refresh Token
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{base_url}}/api/v1/auth/refresh
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "data": {
+      "type": "authentication",
+      "attributes": {
+        "refresh_token": "{{refresh_token}}"
+      }
+    }
+  }
+}
+
+docs {
+  # Refresh Access Token
+  
+  Uses a valid refresh token to obtain new access and refresh tokens.
+  
+  ## Token Rotation
+  
+  This endpoint implements **refresh token rotation**:
+  - The old refresh token is revoked
+  - A new refresh token is issued
+  - A new access token is issued
+  
+  This provides additional security as each refresh token can only be used once.
+  
+  ## Request Body (JSON:API format)
+  
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | refresh_token | string | Yes | Current valid refresh token |
+  
+  ## Response
+  
+  Returns new access_token and refresh_token.
+  
+  ## Errors
+  
+  - **401 Unauthorized**: Invalid refresh token
+  - **401 Unauthorized**: Token expired
+  - **401 Unauthorized**: Token revoked
+  
+  **No authentication required** (uses refresh token in body)
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+    const body = res.getBody();
+    bru.setEnvVar("access_token", body.data.attributes.access_token);
+    bru.setEnvVar("refresh_token", body.data.attributes.refresh_token);
+  }
+}
+
+tests {
+  test("Status is 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response contains new access_token", function() {
+    expect(res.getBody().data.attributes.access_token).to.be.a('string');
+  });
+  
+  test("Response contains new refresh_token", function() {
+    expect(res.getBody().data.attributes.refresh_token).to.be.a('string');
+  });
+  
+  test("Token type is Bearer", function() {
+    expect(res.getBody().data.attributes.token_type).to.equal('Bearer');
+  });
+  
+  test("Expires in 1800 seconds (30 min)", function() {
+    expect(res.getBody().data.attributes.expires_in).to.equal(1800);
+  });
+}

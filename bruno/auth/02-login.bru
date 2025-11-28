@@ -1,0 +1,90 @@
+meta {
+  name: 02 - Login
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/api/v1/auth/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "data": {
+      "type": "authentication",
+      "attributes": {
+        "email": "newuser@example.com",
+        "password": "Password123!"
+      }
+    }
+  }
+}
+
+docs {
+  # Login
+  
+  Authenticates a user with email and password.
+  
+  ## Request Body (JSON:API format)
+  
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | email | string | Yes | User's email address |
+  | password | string | Yes | User's password |
+  
+  ## Response
+  
+  Returns user, account, and authentication tokens.
+  
+  ## Errors
+  
+  - **401 Unauthorized**: Invalid email or password
+  - **401 Unauthorized**: No account found
+  
+  **No authentication required**
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+    const body = res.getBody();
+    bru.setEnvVar("access_token", body.data.attributes.access_token);
+    bru.setEnvVar("refresh_token", body.data.attributes.refresh_token);
+  }
+}
+
+tests {
+  test("Status is 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response contains access_token", function() {
+    expect(res.getBody().data.attributes.access_token).to.be.a('string');
+  });
+  
+  test("Response contains refresh_token", function() {
+    expect(res.getBody().data.attributes.refresh_token).to.be.a('string');
+  });
+  
+  test("Response contains user data", function() {
+    expect(res.getBody().data.attributes.user).to.have.property('email');
+  });
+  
+  test("Response contains account data", function() {
+    expect(res.getBody().data.attributes.account).to.have.property('name');
+  });
+  
+  test("Token type is Bearer", function() {
+    expect(res.getBody().data.attributes.token_type).to.equal('Bearer');
+  });
+  
+  test("Expires in 1800 seconds (30 min)", function() {
+    expect(res.getBody().data.attributes.expires_in).to.equal(1800);
+  });
+}
