@@ -77,4 +77,4 @@ jobs:
         run: |
           bin/rails db:create
           bin/rails db:migrate
-          bin/rspec
+          bundle exec rspec
