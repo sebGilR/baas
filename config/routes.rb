@@ -9,13 +9,15 @@ Rails.application.routes.draw do
     namespace :v1 do
       # Health check endpoint
       get "health", to: "health#show"
+      get "public", to: "public#show"
 
       # Authentication routes
-      post "auth/login", to: "authentication#login"
-      post "auth/register", to: "authentication#register"
-      post "auth/refresh", to: "authentication#refresh"
-      post "auth/logout", to: "authentication#logout"
-      post "auth/switch_account", to: "authentication#switch_account"
+      namespace :auth do
+        post 'register', to: 'registrations#create'
+        post 'login', to: 'sessions#create'
+        post 'refresh', to: 'refresh_tokens#create'
+        delete 'logout', to: 'refresh_tokens#destroy'
+      end
 
       # Core resources
       resources :accounts, only: %i[index show create update]
