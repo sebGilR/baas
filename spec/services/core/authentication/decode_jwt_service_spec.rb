@@ -6,7 +6,7 @@ RSpec.describe(Core::Authentication::DecodeJwtService) do
   let(:user) { create(:user) }
   let(:account) { create(:account) }
   let!(:membership) { create(:account_membership, user: user, account: account, role: :owner) }
-  let(:jwt_secret) { Rails.application.credentials.secret_key_base }
+  let(:jwt_secret) { Rails.application.credentials.secret_key_base || Rails.application.secret_key_base }
 
   describe "#call" do
     context "with a valid token" do

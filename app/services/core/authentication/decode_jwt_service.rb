@@ -27,7 +27,7 @@ module Core
       end
 
       def jwt_secret
-        Rails.application.credentials.secret_key_base
+        Rails.application.credentials.secret_key_base || Rails.application.secret_key_base
       end
     end
   end
