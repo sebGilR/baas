@@ -52,7 +52,7 @@ group :development do
   gem "bundler-audit", "~> 0.9", require: false
   gem "debug", platforms: [:mri, :windows], require: "debug/prelude"
   gem "rubocop", "~> 1.50", require: false
-  gem "rubocop-rails", "~> 2.20", require: false
+  gem "rubocop-rails", "~> 2.34", require: false
   gem "rubocop-rspec", "~> 3.8", require: false
   gem "rubocop-shopify", require: false
 end
