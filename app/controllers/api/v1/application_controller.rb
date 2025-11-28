@@ -4,7 +4,7 @@ module Api
   module V1
     class ApplicationController < ::ApplicationController
       rescue_from ActiveRecord::RecordNotFound, with: :not_found
-      rescue_from ActiveRecord::RecordInvalid, with: :unprocessable_entity
+      rescue_from ActiveRecord::RecordInvalid, with: :unprocessable_content
       before_action :authenticate_user!
 
       private
@@ -22,7 +22,7 @@ module Api
         )
       end
 
-      def unprocessable_entity(exception)
+      def unprocessable_content(exception)
         render(
           json: {
             errors: [{

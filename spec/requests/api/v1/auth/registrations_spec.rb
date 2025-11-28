@@ -59,7 +59,7 @@ RSpec.describe("Api::V1::Auth::Registrations", type: :request) do
 
       it "returns an unprocessable entity response" do
         post "/api/v1/auth/register", params: invalid_params, as: :json
-        expect(response).to(have_http_status(:unprocessable_entity))
+        expect(response).to(have_http_status(:unprocessable_content))
       end
     end
   end
