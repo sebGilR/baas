@@ -13,9 +13,9 @@ module Api
           )
 
           if result.success?
-            render(json: success_response(result), status: :created)
+            render(json: authentication_response(result.data), status: :created)
           else
-            render(json: error_response("422", "Registration Failed", result.errors), status: :unprocessable_content)
+            render_service_error(result, default_status: :unprocessable_entity)
           end
         end
 
@@ -25,24 +25,14 @@ module Api
           params.require(:data).require(:attributes).permit(:email, :password, :name, :account_name)
         end
 
-        def success_response(result)
-          {
-            data: {
-              type: "authentication",
-              attributes: {
-                user: UserSerializer.new(result.data.user).serializable_hash[:data][:attributes],
-                account: AccountSerializer.new(result.data.account).serializable_hash[:data][:attributes],
-                access_token: result.data.access_token,
-                refresh_token: result.data.refresh_token,
-                token_type: "Bearer",
-                expires_in: result.data.expires_in,
-              },
-            },
-          }
-        end
-
-        def error_response(status, title, detail)
-          { errors: [{ status: status, title: title, detail: detail }] }
+        def authentication_response(data)
+          AuthenticationSerializer.new(
+            user: data.user,
+            account: data.account,
+            access_token: data.access_token,
+            refresh_token: data.refresh_token,
+            expires_in: data.expires_in,
+          ).serializable_hash
         end
       end
     end

@@ -2,38 +2,19 @@
 
 module Api
   module V1
+    # Base controller for all API v1 endpoints
+    # Provides authentication, authorization, error handling,
+    # pagination, filtering, and sorting capabilities
     class ApplicationController < ::ApplicationController
-      rescue_from ActiveRecord::RecordNotFound, with: :not_found
-      rescue_from ActiveRecord::RecordInvalid, with: :unprocessable_content
+      include Pundit::Authorization
+      include ErrorHandling
+      include Paginatable
+      include Filterable
+      include Sortable
+
       before_action :authenticate_user!
 
       private
-
-      def not_found(exception)
-        render(
-          json: {
-            errors: [{
-              status: "404",
-              title: "Not Found",
-              detail: exception.message,
-            }],
-          },
-          status: :not_found,
-        )
-      end
-
-      def unprocessable_content(exception)
-        render(
-          json: {
-            errors: [{
-              status: "422",
-              title: "Unprocessable Entity",
-              detail: exception.message,
-            }],
-          },
-          status: :unprocessable_content,
-        )
-      end
 
       # Returns the current authenticated user
       # To be implemented once JWT authentication is set up
@@ -54,15 +35,11 @@ module Api
         # For now, return unauthorized
         return if current_user
 
-        render(
-          json: {
-            errors: [{
-              status: "401",
-              title: "Unauthorized",
-              detail: "You must be authenticated to access this resource.",
-            }],
-          },
-          status: :unauthorized,
+        render_error(
+          :unauthorized,
+          title: "Unauthorized",
+          detail: "You must be authenticated to access this resource.",
+          code: ServiceResult::Codes::TOKEN_INVALID,
         )
       end
 

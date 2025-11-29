@@ -18,7 +18,7 @@ module Core
           build_success_response(result[:user], result[:account], result[:tokens])
         end
       rescue StandardError => e
-        failure(errors: e.message)
+        failure(errors: e.message, code: Codes::VALIDATION_FAILED)
       end
 
       private
@@ -27,15 +27,19 @@ module Core
 
       def create_user_with_account
         user = create_user
-        return failure(errors: user.errors.full_messages) unless user.persisted?
+        return validation_failure(user.errors.full_messages) unless user.persisted?
 
         account = create_account
-        return failure(errors: account.errors.full_messages) unless account.persisted?
+        return validation_failure(account.errors.full_messages) unless account.persisted?
 
         membership = create_membership(user, account)
-        return failure(errors: membership.errors.full_messages) unless membership.persisted?
+        return validation_failure(membership.errors.full_messages) unless membership.persisted?
 
         { user: user, account: account, tokens: generate_tokens(user, account) }
+      end
+
+      def validation_failure(errors)
+        failure(errors: errors, code: Codes::VALIDATION_FAILED)
       end
 
       def build_success_response(user, account, tokens)

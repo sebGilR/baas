@@ -11,11 +11,11 @@ module Core
 
       def call
         user = find_user
-        return failure(errors: "Invalid email or password") unless user
-        return failure(errors: "Invalid email or password") unless user.authenticate(password)
+        return invalid_credentials unless user
+        return invalid_credentials unless user.authenticate(password)
 
         account = user.primary_account
-        return failure(errors: "No account found") unless account
+        return failure(errors: "No account found", code: Codes::NOT_FOUND) unless account
 
         tokens = generate_tokens(user, account)
 
@@ -31,6 +31,10 @@ module Core
       private
 
       attr_reader :email, :password, :device_info
+
+      def invalid_credentials
+        failure(errors: "Invalid email or password", code: Codes::INVALID_CREDENTIALS)
+      end
 
       def find_user
         User.find_by(email: email.downcase.strip)

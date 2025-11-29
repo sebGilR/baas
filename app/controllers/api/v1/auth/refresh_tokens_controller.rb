@@ -10,9 +10,9 @@ module Api
           )
 
           if result.success?
-            render(json: token_response(result), status: :ok)
+            render(json: token_response(result.data), status: :ok)
           else
-            render(json: error_response("401", "Token Refresh Failed", result.errors), status: :unauthorized)
+            render_service_error(result, default_status: :unauthorized)
           end
         end
 
@@ -24,7 +24,7 @@ module Api
           if result.success?
             head(:no_content)
           else
-            render(json: error_response("400", "Logout Failed", result.errors), status: :bad_request)
+            render_service_error(result, default_status: :bad_request)
           end
         end
 
@@ -34,22 +34,12 @@ module Api
           params.require(:data).require(:attributes).permit(:refresh_token)
         end
 
-        def token_response(result)
-          {
-            data: {
-              type: "authentication",
-              attributes: {
-                access_token: result.data.access_token,
-                refresh_token: result.data.refresh_token,
-                token_type: "Bearer",
-                expires_in: result.data.expires_in,
-              },
-            },
-          }
-        end
-
-        def error_response(status, title, detail)
-          { errors: [{ status: status, title: title, detail: detail }] }
+        def token_response(data)
+          TokenSerializer.new(
+            access_token: data.access_token,
+            refresh_token: data.refresh_token,
+            expires_in: data.expires_in,
+          ).serializable_hash
         end
       end
     end

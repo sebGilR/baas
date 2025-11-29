@@ -9,9 +9,9 @@ module Core
 
       def call
         token_record = find_token_record
-        return failure(errors: "Invalid refresh token") unless token_record
-        return failure(errors: "Token expired") if token_record.expired?
-        return failure(errors: "Token revoked") if token_record.revoked?
+        return token_invalid("Invalid refresh token") unless token_record
+        return token_expired if token_record.expired?
+        return token_invalid("Token revoked") if token_record.revoked?
 
         user = token_record.user
         account = user.primary_account
@@ -31,6 +31,14 @@ module Core
       private
 
       attr_reader :refresh_token
+
+      def token_invalid(message)
+        failure(errors: message, code: Codes::TOKEN_INVALID)
+      end
+
+      def token_expired
+        failure(errors: "Token expired", code: Codes::TOKEN_EXPIRED)
+      end
 
       def find_token_record
         token_digest = Digest::SHA256.hexdigest(refresh_token)

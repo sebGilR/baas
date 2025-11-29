@@ -9,7 +9,7 @@ module Core
 
       def call
         token_record = find_token_record
-        return failure(errors: "Invalid refresh token") unless token_record
+        return failure(errors: "Invalid refresh token", code: Codes::TOKEN_INVALID) unless token_record
 
         token_record.revoke!
 

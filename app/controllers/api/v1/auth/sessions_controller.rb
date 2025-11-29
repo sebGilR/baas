@@ -12,9 +12,9 @@ module Api
           )
 
           if result.success?
-            render(json: authentication_response(result), status: :ok)
+            render(json: authentication_response(result.data), status: :ok)
           else
-            render(json: error_response("401", "Authentication Failed", result.errors), status: :unauthorized)
+            render_service_error(result, default_status: :unauthorized)
           end
         end
 
@@ -28,28 +28,14 @@ module Api
           { user_agent: request.user_agent, ip_address: request.remote_ip }
         end
 
-        def authentication_response(result)
-          {
-            data: {
-              type: "authentication",
-              attributes: build_auth_attributes(result),
-            },
-          }
-        end
-
-        def build_auth_attributes(result)
-          {
-            user: UserSerializer.new(result.data.user).serializable_hash[:data][:attributes],
-            account: AccountSerializer.new(result.data.account).serializable_hash[:data][:attributes],
-            access_token: result.data.access_token,
-            refresh_token: result.data.refresh_token,
-            token_type: "Bearer",
-            expires_in: result.data.expires_in,
-          }
-        end
-
-        def error_response(status, title, detail)
-          { errors: [{ status: status, title: title, detail: detail }] }
+        def authentication_response(data)
+          AuthenticationSerializer.new(
+            user: data.user,
+            account: data.account,
+            access_token: data.access_token,
+            refresh_token: data.refresh_token,
+            expires_in: data.expires_in,
+          ).serializable_hash
         end
       end
     end
