@@ -26,7 +26,7 @@ module ErrorHandling
     ServiceResult::Codes::TOKEN_INVALID => :unauthorized,
     ServiceResult::Codes::FORBIDDEN => :forbidden,
     ServiceResult::Codes::NOT_FOUND => :not_found,
-    ServiceResult::Codes::VALIDATION_FAILED => :unprocessable_entity,
+    ServiceResult::Codes::VALIDATION_FAILED => :unprocessable_content,
     ServiceResult::Codes::ALREADY_EXISTS => :conflict,
     ServiceResult::Codes::RATE_LIMIT_EXCEEDED => :too_many_requests,
   }.freeze
@@ -38,7 +38,7 @@ module ErrorHandling
     forbidden: "Forbidden",
     not_found: "Not Found",
     conflict: "Conflict",
-    unprocessable_entity: "Unprocessable Entity",
+    unprocessable_content: "Unprocessable Content",
     too_many_requests: "Too Many Requests",
     internal_server_error: "Internal Server Error",
   }.freeze
@@ -73,8 +73,8 @@ module ErrorHandling
 
   # Render validation errors from ActiveModel::Errors
   # @param errors [ActiveModel::Errors] Rails validation errors
-  # @param status [Symbol] HTTP status code (default: :unprocessable_entity)
-  def render_validation_errors(errors, status: :unprocessable_entity)
+  # @param status [Symbol] HTTP status code (default: :unprocessable_content)
+  def render_validation_errors(errors, status: :unprocessable_content)
     status_code = Rack::Utils.status_code(status)
 
     error_objects = errors.map do |error|
@@ -94,7 +94,7 @@ module ErrorHandling
   # Maps result.code to appropriate HTTP status
   # @param result [ServiceResult] Failed service result
   # @param default_status [Symbol] Fallback status if code not mapped
-  def render_service_error(result, default_status: :unprocessable_entity)
+  def render_service_error(result, default_status: :unprocessable_content)
     status = CODE_TO_STATUS[result.code] || default_status
     title = STATUS_TITLES[status] || "Error"
 

@@ -89,9 +89,9 @@ RSpec.describe("Api::V1::Auth::RefreshTokens", type: :request) do
         }
       end
 
-      it "returns a bad request response" do
+      it "returns an unauthorized response" do
         delete "/api/v1/auth/logout", params: invalid_params, as: :json
-        expect(response).to(have_http_status(:bad_request))
+        expect(response).to(have_http_status(:unauthorized))
       end
     end
   end

@@ -30,7 +30,7 @@ module Filterable
   def filter_params
     return {} if params[:filter].blank?
 
-    params.expect(filter: [allowed_filters])
+    params.expect(filter: allowed_filters)
   end
 
   # Override in controller to specify allowed filter fields

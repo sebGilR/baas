@@ -27,6 +27,7 @@ gem "solid_queue", "~> 1.2"
 gem "redis", "~> 5.0"
 
 # Database & Query
+gem "kaminari", "~> 1.2"
 gem "neighbor", "~> 0.4"
 
 # Monitoring & Logging
