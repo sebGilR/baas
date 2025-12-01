@@ -6,7 +6,12 @@ RSpec.describe(Tagging, type: :model) do
   describe "validations" do
     subject { create(:tagging) }
 
-    it { is_expected.to(validate_uniqueness_of(:tag_id).scoped_to([:account_id, :taggable_type, :taggable_id]).with_message("has already been applied to this item")) }
+    it "validates uniqueness of tag_id within scope" do
+      existing = create(:tagging)
+      duplicate = build(:tagging, tag: existing.tag, taggable: existing.taggable, account: existing.account)
+      expect(duplicate).not_to(be_valid)
+      expect(duplicate.errors[:tag_id]).to(include("has already been applied to this item"))
+    end
   end
 
   describe "associations" do

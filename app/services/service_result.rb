@@ -45,4 +45,18 @@ class ServiceResult
   def failure?
     !@success
   end
+
+  # Delegate unknown methods to the data object for easier access
+  # This allows result.blog instead of result.data.blog
+  def method_missing(method, *args, &block)
+    if @data.respond_to?(method)
+      @data.public_send(method, *args, &block)
+    else
+      super
+    end
+  end
+
+  def respond_to_missing?(method, include_private = false)
+    @data.respond_to?(method, include_private) || super
+  end
 end

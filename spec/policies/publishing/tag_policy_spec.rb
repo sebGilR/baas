@@ -6,62 +6,52 @@ RSpec.describe(Publishing::TagPolicy, type: :policy) do
   let(:account) { create(:account) }
   let(:tag) { create(:tag, account: account) }
 
-  subject { described_class }
-
   context "for an owner" do
+    subject { described_class.new(user, tag, AuthorizationContext.new(user: user, account: account)) }
+
     let(:user) { create(:user) }
     let!(:membership) { create(:account_membership, user: user, account: account, role: :owner) }
 
-    permissions :index?, :show?, :create?, :update?, :destroy? do
-      it "grants access" do
-        expect(subject).to(permit(user, tag))
-      end
-    end
+    it { is_expected.to permit_action(:index) }
+    it { is_expected.to permit_action(:show) }
+    it { is_expected.to permit_action(:create) }
+    it { is_expected.to permit_action(:update) }
+    it { is_expected.to permit_action(:destroy) }
   end
 
   context "for an admin" do
+    subject { described_class.new(user, tag, AuthorizationContext.new(user: user, account: account)) }
+
     let(:user) { create(:user) }
     let!(:membership) { create(:account_membership, user: user, account: account, role: :admin) }
 
-    permissions :destroy? do
-      it "grants access" do
-        expect(subject).to(permit(user, tag))
-      end
-    end
+    it { is_expected.to permit_action(:destroy) }
   end
 
   context "for an editor" do
+    subject { described_class.new(user, tag, AuthorizationContext.new(user: user, account: account)) }
+
     let(:user) { create(:user) }
     let!(:membership) { create(:account_membership, user: user, account: account, role: :editor) }
 
-    permissions :index?, :show?, :create?, :update? do
-      it "grants access" do
-        expect(subject).to(permit(user, tag))
-      end
-    end
-
-    permissions :destroy? do
-      it "denies access" do
-        expect(subject).not_to(permit(user, tag))
-      end
-    end
+    it { is_expected.to permit_action(:index) }
+    it { is_expected.to permit_action(:show) }
+    it { is_expected.to permit_action(:create) }
+    it { is_expected.to permit_action(:update) }
+    it { is_expected.to forbid_action(:destroy) }
   end
 
   context "for an author" do
+    subject { described_class.new(user, tag, AuthorizationContext.new(user: user, account: account)) }
+
     let(:user) { create(:user) }
     let!(:membership) { create(:account_membership, user: user, account: account, role: :author) }
 
-    permissions :index?, :show? do
-      it "grants access" do
-        expect(subject).to(permit(user, tag))
-      end
-    end
-
-    permissions :create?, :update?, :destroy? do
-      it "denies access" do
-        expect(subject).not_to(permit(user, tag))
-      end
-    end
+    it { is_expected.to permit_action(:index) }
+    it { is_expected.to permit_action(:show) }
+    it { is_expected.to forbid_action(:create) }
+    it { is_expected.to forbid_action(:update) }
+    it { is_expected.to forbid_action(:destroy) }
   end
 
   describe "Scope" do

@@ -84,10 +84,12 @@ RSpec.describe(Draft, type: :model) do
       let(:draft) { create(:draft, account: account, blog: blog, author: author, title: "Draft Title", content: "Draft content") }
 
       it "creates a new post from the draft" do
+        draft # Force creation before counting
         expect { draft.convert_to_post! }.to(change(Post, :count).by(1))
       end
 
       it "deletes the draft after conversion" do
+        draft # Force creation before counting
         expect { draft.convert_to_post! }.to(change(Draft, :count).by(-1))
       end
 

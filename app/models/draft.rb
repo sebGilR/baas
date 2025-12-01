@@ -34,22 +34,28 @@ class Draft < ApplicationRecord
   def convert_to_post!
     return nil if title.blank? || content.blank?
 
-    Post.create!(
-      account: account,
-      blog: blog,
-      author: author,
-      title: title,
-      content: content,
-      status: :draft,
-      metadata: metadata
-    ).tap do |new_post|
+    new_post = nil
+    ActiveRecord::Base.transaction do
+      new_post = Post.create!(
+        account: account,
+        blog: blog,
+        author: author,
+        title: title,
+        content: content,
+        status: :draft,
+        metadata: metadata
+      )
+
       # Copy tags to the new post
       tags.each do |tag|
         new_post.taggings.create!(account: account, tag: tag)
       end
+
       # Delete the draft after successful conversion
       destroy!
     end
+
+    new_post
   end
 
   def word_count

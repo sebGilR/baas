@@ -8,56 +8,61 @@ RSpec.describe(Publishing::DraftPolicy, type: :policy) do
   let(:draft_author) { create(:user) }
   let(:draft) { create(:draft, account: account, blog: blog, author: draft_author) }
 
-  subject { described_class }
-
   context "for an owner" do
+    subject { described_class.new(user, draft, AuthorizationContext.new(user: user, account: account)) }
+
     let(:user) { create(:user) }
     let!(:membership) { create(:account_membership, user: user, account: account, role: :owner) }
 
-    permissions :index?, :show?, :create?, :update?, :destroy?, :autosave?, :convert_to_post? do
-      it "grants access" do
-        expect(subject).to(permit(user, draft))
-      end
-    end
+    it { is_expected.to permit_action(:index) }
+    it { is_expected.to permit_action(:show) }
+    it { is_expected.to permit_action(:create) }
+    it { is_expected.to permit_action(:update) }
+    it { is_expected.to permit_action(:destroy) }
+    it { is_expected.to permit_action(:autosave) }
+    it { is_expected.to permit_action(:convert_to_post) }
   end
 
   context "for an editor" do
+    subject { described_class.new(user, draft, AuthorizationContext.new(user: user, account: account)) }
+
     let(:user) { create(:user) }
     let!(:membership) { create(:account_membership, user: user, account: account, role: :editor) }
 
-    permissions :index?, :show?, :create?, :update?, :destroy?, :autosave?, :convert_to_post? do
-      it "grants access to any draft in the account" do
-        expect(subject).to(permit(user, draft))
-      end
-    end
+    it { is_expected.to permit_action(:index) }
+    it { is_expected.to permit_action(:show) }
+    it { is_expected.to permit_action(:create) }
+    it { is_expected.to permit_action(:update) }
+    it { is_expected.to permit_action(:destroy) }
+    it { is_expected.to permit_action(:autosave) }
+    it { is_expected.to permit_action(:convert_to_post) }
   end
 
   context "for an author" do
+    subject { described_class.new(user, draft, AuthorizationContext.new(user: user, account: account)) }
+
     let(:user) { create(:user) }
     let!(:membership) { create(:account_membership, user: user, account: account, role: :author) }
 
-    permissions :index?, :create? do
-      it "grants access" do
-        expect(subject).to(permit(user, draft))
-      end
-    end
+    it { is_expected.to permit_action(:index) }
+    it { is_expected.to permit_action(:create) }
 
     context "for their own drafts" do
       let(:draft) { create(:draft, account: account, blog: blog, author: user) }
 
-      permissions :show?, :update?, :destroy?, :autosave?, :convert_to_post? do
-        it "grants access" do
-          expect(subject).to(permit(user, draft))
-        end
-      end
+      it { is_expected.to permit_action(:show) }
+      it { is_expected.to permit_action(:update) }
+      it { is_expected.to permit_action(:destroy) }
+      it { is_expected.to permit_action(:autosave) }
+      it { is_expected.to permit_action(:convert_to_post) }
     end
 
     context "for other authors' drafts" do
-      permissions :show?, :update?, :destroy?, :autosave?, :convert_to_post? do
-        it "denies access" do
-          expect(subject).not_to(permit(user, draft))
-        end
-      end
+      it { is_expected.to forbid_action(:show) }
+      it { is_expected.to forbid_action(:update) }
+      it { is_expected.to forbid_action(:destroy) }
+      it { is_expected.to forbid_action(:autosave) }
+      it { is_expected.to forbid_action(:convert_to_post) }
     end
   end
 

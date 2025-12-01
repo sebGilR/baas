@@ -12,10 +12,12 @@ RSpec.describe(Publishing::Drafts::ConvertToPostService) do
   describe "#call" do
     context "with valid parameters" do
       it "creates a new post from the draft" do
+        draft # Force creation before counting
         expect { service.call }.to(change(Post, :count).by(1))
       end
 
       it "deletes the draft after conversion" do
+        draft # Force creation before counting
         expect { service.call }.to(change(Draft, :count).by(-1))
       end
 

@@ -12,6 +12,7 @@ RSpec.describe(Publishing::Drafts::DeleteDraftService) do
   describe "#call" do
     context "with valid parameters" do
       it "deletes the draft" do
+        draft # Force creation before counting
         expect { service.call }.to(change(Draft, :count).by(-1))
       end
 

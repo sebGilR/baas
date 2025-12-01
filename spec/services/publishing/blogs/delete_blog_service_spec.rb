@@ -17,6 +17,7 @@ RSpec.describe(Publishing::Blogs::DeleteBlogService) do
       end
 
       it "does not destroy the blog record" do
+        blog # Force creation before counting
         expect { service.call }.not_to(change(Blog, :count))
       end
     end

@@ -18,6 +18,7 @@ RSpec.describe(Publishing::Posts::DeletePostService) do
       end
 
       it "does not destroy the post record" do
+        post # Force creation before counting
         expect { service.call }.not_to(change(Post, :count))
       end
     end
