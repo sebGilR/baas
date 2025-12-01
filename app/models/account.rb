@@ -6,6 +6,11 @@ class Account < ApplicationRecord
   # Associations
   has_many :account_memberships, dependent: :destroy
   has_many :users, through: :account_memberships
+  has_many :blogs, dependent: :destroy
+  has_many :posts, dependent: :destroy
+  has_many :drafts, dependent: :destroy
+  has_many :tags, dependent: :destroy
+  has_many :categories, dependent: :destroy
 
   # Validations
   validates :name, presence: true, length: { minimum: 2 }

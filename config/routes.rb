@@ -34,8 +34,11 @@ Rails.application.routes.draw do
       resources :drafts do
         member do
           post :autosave
+          post :convert_to_post
         end
       end
+      resources :tags
+      resources :categories
 
       # Analytics resources
       namespace :analytics do

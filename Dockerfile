@@ -13,8 +13,13 @@ FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
 WORKDIR /rails
 
 # Install base packages (added libvips for image processing)
+# Need PostgreSQL 16 client to match database server version
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libjemalloc2 libvips postgresql-client && \
+    apt-get install --no-install-recommends -y curl gnupg lsb-release && \
+    echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
+    curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg && \
+    apt-get update -qq && \
+    apt-get install --no-install-recommends -y libjemalloc2 libvips postgresql-client-16 && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Create a non-root user to run the app
@@ -37,10 +42,10 @@ RUN apt-get update -qq && \
 
 # Create bundle directory and switch user
 RUN mkdir -p /home/rails/bundle && chown -R rails:rails /home/rails/bundle
-USER 1000:1000
 
 # Install application gems
-COPY Gemfile Gemfile.lock ./
+COPY --chown=rails:rails Gemfile Gemfile.lock ./
+USER 1000:1000
 RUN bundle install && \
     rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \
     bundle exec bootsnap precompile --gemfile
