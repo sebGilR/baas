@@ -66,6 +66,6 @@ group :test do
   gem "database_cleaner-active_record", "~> 2.1"
   gem "factory_bot_rails", "~> 6.2"
   gem "faker", "~> 3.2"
-  gem "pundit-matchers", "~> 3.1"
+  gem "pundit-matchers", "~> 4.0"
   gem "shoulda-matchers", "~> 7.0"
 end
