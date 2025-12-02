@@ -1,0 +1,50 @@
+meta {
+  name: 05 - Autosave Draft
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{base_url}}/api/v1/drafts/{{draft_id}}/autosave
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+  Authorization: Bearer {{access_token}}
+}
+
+body:json {
+  {
+    "data": {
+      "type": "drafts",
+      "id": "{{draft_id}}",
+      "attributes": {
+        "title": "Autosaved Draft Title",
+        "content": "This content was autosaved while the user was typing..."
+      }
+    }
+  }
+}
+
+tests {
+  test("Status is 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response is JSON:API format", function() {
+    expect(res.getBody()).to.have.property('data');
+  });
+  
+  test("Draft content is updated", function() {
+    const body = res.getBody();
+    expect(body.data.attributes.content).to.include("autosaved");
+  });
+  
+  test("Draft has autosaved_at timestamp", function() {
+    const body = res.getBody();
+    expect(body.data.attributes.autosaved_at).to.not.be.null;
+  });
+}

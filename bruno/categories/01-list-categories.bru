@@ -1,0 +1,49 @@
+meta {
+  name: 01 - List Categories
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/api/v1/categories
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+  Authorization: Bearer {{access_token}}
+}
+
+params:query {
+  ~page: 1
+  ~per_page: 20
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+    const body = res.getBody();
+    if (body.data && body.data.length > 0) {
+      bru.setEnvVar("category_id", body.data[0].id);
+    }
+  }
+}
+
+tests {
+  test("Status is 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response is JSON:API format", function() {
+    expect(res.getBody()).to.have.property('data');
+  });
+  
+  test("Data is an array", function() {
+    expect(res.getBody().data).to.be.an('array');
+  });
+  
+  test("Response includes pagination meta", function() {
+    expect(res.getBody()).to.have.property('meta');
+  });
+}

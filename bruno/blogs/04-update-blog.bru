@@ -1,0 +1,43 @@
+meta {
+  name: 04 - Update Blog
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{base_url}}/api/v1/blogs/{{blog_id}}
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+  Authorization: Bearer {{access_token}}
+}
+
+body:json {
+  {
+    "data": {
+      "type": "blogs",
+      "attributes": {
+        "name": "My Updated Tech Blog",
+        "description": "An updated description for my tech blog"
+      }
+    }
+  }
+}
+
+tests {
+  test("Status is 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Blog name is updated", function() {
+    expect(res.getBody().data.attributes.name).to.equal("My Updated Tech Blog");
+  });
+  
+  test("Blog description is updated", function() {
+    expect(res.getBody().data.attributes.description).to.equal("An updated description for my tech blog");
+  });
+}

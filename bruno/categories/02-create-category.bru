@@ -1,0 +1,66 @@
+meta {
+  name: 02 - Create Category
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/api/v1/categories
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+  Authorization: Bearer {{access_token}}
+}
+
+body:json {
+  {
+    "data": {
+      "type": "categories",
+      "attributes": {
+        "name": "Programming",
+        "slug": "programming",
+        "description": "Articles about programming languages and software development"
+      }
+    }
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+    bru.setEnvVar("category_id", res.getBody().data.id);
+  }
+}
+
+tests {
+  test("Status is 201 Created", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Response is JSON:API format", function() {
+    expect(res.getBody()).to.have.property('data');
+  });
+  
+  test("Category has name", function() {
+    const body = res.getBody();
+    expect(body.data.attributes.name).to.equal("Programming");
+  });
+  
+  test("Category has slug", function() {
+    const body = res.getBody();
+    expect(body.data.attributes.slug).to.equal("programming");
+  });
+  
+  test("Category has description", function() {
+    const body = res.getBody();
+    expect(body.data.attributes.description).to.include("programming");
+  });
+  
+  test("Category has public_id, not integer id", function() {
+    const body = res.getBody();
+    expect(body.data.id).to.match(/^[0-9a-f-]{36}$/);
+  });
+}

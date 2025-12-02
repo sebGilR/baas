@@ -1,0 +1,44 @@
+meta {
+  name: 04 - Update Post
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{base_url}}/api/v1/posts/{{post_id}}
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+  Authorization: Bearer {{access_token}}
+}
+
+body:json {
+  {
+    "data": {
+      "type": "posts",
+      "attributes": {
+        "title": "My Updated Blog Post",
+        "content": "<p>This is the updated content of my blog post.</p>",
+        "featured": true
+      }
+    }
+  }
+}
+
+tests {
+  test("Status is 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Post title is updated", function() {
+    expect(res.getBody().data.attributes.title).to.equal("My Updated Blog Post");
+  });
+  
+  test("Post is now featured", function() {
+    expect(res.getBody().data.attributes.featured).to.equal(true);
+  });
+}

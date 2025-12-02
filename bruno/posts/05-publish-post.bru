@@ -1,0 +1,31 @@
+meta {
+  name: 05 - Publish Post
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{base_url}}/api/v1/posts/{{post_id}}/publish
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+  Authorization: Bearer {{access_token}}
+}
+
+tests {
+  test("Status is 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Post status is published", function() {
+    expect(res.getBody().data.attributes.status).to.equal("published");
+  });
+  
+  test("Post has published_at timestamp", function() {
+    expect(res.getBody().data.attributes.published_at).to.be.a('string');
+  });
+}

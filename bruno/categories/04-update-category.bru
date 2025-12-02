@@ -1,0 +1,56 @@
+meta {
+  name: 04 - Update Category
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{base_url}}/api/v1/categories/{{category_id}}
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+  Authorization: Bearer {{access_token}}
+}
+
+body:json {
+  {
+    "data": {
+      "type": "categories",
+      "id": "{{category_id}}",
+      "attributes": {
+        "name": "Software Development",
+        "slug": "software-development",
+        "description": "Everything about building software - from coding to deployment"
+      }
+    }
+  }
+}
+
+tests {
+  test("Status is 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response is JSON:API format", function() {
+    expect(res.getBody()).to.have.property('data');
+  });
+  
+  test("Category name is updated", function() {
+    const body = res.getBody();
+    expect(body.data.attributes.name).to.equal("Software Development");
+  });
+  
+  test("Category slug is updated", function() {
+    const body = res.getBody();
+    expect(body.data.attributes.slug).to.equal("software-development");
+  });
+  
+  test("Category description is updated", function() {
+    const body = res.getBody();
+    expect(body.data.attributes.description).to.include("building software");
+  });
+}

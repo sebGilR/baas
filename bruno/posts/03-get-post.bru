@@ -1,0 +1,41 @@
+meta {
+  name: 03 - Get Post
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{base_url}}/api/v1/posts/{{post_id}}
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+  Authorization: Bearer {{access_token}}
+}
+
+params:query {
+  ~include: blog,author,tags,category
+}
+
+tests {
+  test("Status is 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response contains post data", function() {
+    expect(res.getBody().data).to.have.property('id');
+    expect(res.getBody().data.type).to.equal("post");
+  });
+  
+  test("Post has expected attributes", function() {
+    const attrs = res.getBody().data.attributes;
+    expect(attrs).to.have.property('title');
+    expect(attrs).to.have.property('slug');
+    expect(attrs).to.have.property('content');
+    expect(attrs).to.have.property('status');
+    expect(attrs).to.have.property('reading_time_minutes');
+  });
+}

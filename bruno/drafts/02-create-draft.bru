@@ -1,0 +1,63 @@
+meta {
+  name: 02 - Create Draft
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/api/v1/drafts
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+  Authorization: Bearer {{access_token}}
+}
+
+body:json {
+  {
+    "data": {
+      "type": "drafts",
+      "attributes": {
+        "title": "My Draft Title",
+        "content": "This is the draft content that will be edited before publishing."
+      },
+      "relationships": {
+        "post": {
+          "data": {
+            "type": "posts",
+            "id": "{{post_id}}"
+          }
+        }
+      }
+    }
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+    bru.setEnvVar("draft_id", res.getBody().data.id);
+  }
+}
+
+tests {
+  test("Status is 201 Created", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Response is JSON:API format", function() {
+    expect(res.getBody()).to.have.property('data');
+  });
+  
+  test("Draft has title", function() {
+    const body = res.getBody();
+    expect(body.data.attributes.title).to.equal("My Draft Title");
+  });
+  
+  test("Draft has public_id, not integer id", function() {
+    const body = res.getBody();
+    expect(body.data.id).to.match(/^[0-9a-f-]{36}$/);
+  });
+}

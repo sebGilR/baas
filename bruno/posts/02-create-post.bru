@@ -1,0 +1,67 @@
+meta {
+  name: 02 - Create Post
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/api/v1/posts
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+  Authorization: Bearer {{access_token}}
+}
+
+body:json {
+  {
+    "data": {
+      "type": "posts",
+      "attributes": {
+        "title": "My First Blog Post",
+        "content": "<p>This is the content of my first blog post. It's a great day to start blogging!</p><p>Here's some more content to make the post longer and more interesting.</p>",
+        "excerpt": "A short excerpt about my first blog post",
+        "blog_id": "{{blog_id}}",
+        "seo_title": "My First Blog Post | Tech Blog",
+        "seo_description": "Read about my first blog post and learn something new",
+        "featured": false,
+        "metadata": {
+          "keywords": ["technology", "blogging", "first-post"]
+        }
+      }
+    }
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+    const body = res.getBody();
+    bru.setEnvVar("post_id", body.data.id);
+  }
+}
+
+tests {
+  test("Status is 201 Created", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Response contains post data", function() {
+    expect(res.getBody().data).to.have.property('id');
+    expect(res.getBody().data.attributes.title).to.equal("My First Blog Post");
+  });
+  
+  test("Post has generated slug", function() {
+    expect(res.getBody().data.attributes.slug).to.equal("my-first-blog-post");
+  });
+  
+  test("Post status is draft", function() {
+    expect(res.getBody().data.attributes.status).to.equal("draft");
+  });
+  
+  test("Post has reading time", function() {
+    expect(res.getBody().data.attributes.reading_time_minutes).to.be.a('number');
+  });
+}

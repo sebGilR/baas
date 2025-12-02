@@ -1,0 +1,43 @@
+meta {
+  name: 03 - Get Category
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{base_url}}/api/v1/categories/{{category_id}}
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+  Authorization: Bearer {{access_token}}
+}
+
+params:query {
+  ~include: posts
+}
+
+tests {
+  test("Status is 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response is JSON:API format", function() {
+    expect(res.getBody()).to.have.property('data');
+  });
+  
+  test("Category has correct type", function() {
+    const body = res.getBody();
+    expect(body.data.type).to.equal('categories');
+  });
+  
+  test("Category has expected attributes", function() {
+    const attrs = res.getBody().data.attributes;
+    expect(attrs).to.have.property('name');
+    expect(attrs).to.have.property('slug');
+    expect(attrs).to.have.property('description');
+  });
+}
