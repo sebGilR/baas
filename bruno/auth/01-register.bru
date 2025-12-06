@@ -29,11 +29,6 @@ body:json {
   }
 }
 
-vars:post-response {
-  access_token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0NTk5ZTE0MC05YWJmLTQ4NzEtOWU2OC0wZGU3YjllMDAxM2EiLCJhY2NvdW50X2lkIjoiMTkzMWFkYTktZjE5My00NThjLWE2NmItZTM3MDY1Y2JiNDA1IiwiZW1haWwiOiJuZXd1c2VyMkBleGFtcGxlLmNvbSIsInJvbGUiOiJvd25lciIsImV4cCI6MTc2NDMwMDY5NSwiaWF0IjoxNzY0Mjk4ODk1fQ.9bWoNHqdn60QYEpq4jFkGHOYisll_kJzfLSizTBrdOg
-  refresh_token: YKQtUtezUTE6XW1CFm0SFrWC5HttYlwXjbRQmPOsAo8
-}
-
 script:post-response {
   if (res.getStatus() === 201) {
     const body = res.getBody();

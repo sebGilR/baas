@@ -20,35 +20,11 @@ body:json {
     "data": {
       "type": "authentication",
       "attributes": {
-        "email": "newuser@example.com",
+        "email": "newuser2@example.com",
         "password": "Password123!"
       }
     }
   }
-}
-
-docs {
-  # Login
-  
-  Authenticates a user with email and password.
-  
-  ## Request Body (JSON:API format)
-  
-  | Field | Type | Required | Description |
-  |-------|------|----------|-------------|
-  | email | string | Yes | User's email address |
-  | password | string | Yes | User's password |
-  
-  ## Response
-  
-  Returns user, account, and authentication tokens.
-  
-  ## Errors
-  
-  - **401 Unauthorized**: Invalid email or password
-  - **401 Unauthorized**: No account found
-  
-  **No authentication required**
 }
 
 script:post-response {
@@ -87,4 +63,28 @@ tests {
   test("Expires in 1800 seconds (30 min)", function() {
     expect(res.getBody().data.attributes.expires_in).to.equal(1800);
   });
+}
+
+docs {
+  # Login
+  
+  Authenticates a user with email and password.
+  
+  ## Request Body (JSON:API format)
+  
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | email | string | Yes | User's email address |
+  | password | string | Yes | User's password |
+  
+  ## Response
+  
+  Returns user, account, and authentication tokens.
+  
+  ## Errors
+  
+  - **401 Unauthorized**: Invalid email or password
+  - **401 Unauthorized**: No account found
+  
+  **No authentication required**
 }
