@@ -9,26 +9,28 @@ module Api
       # GET /api/v1/categories
       def index
         @categories = policy_scope(Category, policy_scope_class: Publishing::CategoryPolicy::Scope)
-                      .ordered
+          .ordered
 
         # Filter by root categories only if requested
         @categories = @categories.roots if params[:roots] == "true"
 
         @categories = @categories.page(params[:page]).per(params[:per_page] || 50)
 
-        render jsonapi: @categories,
-               meta: pagination_meta(@categories),
-               include: params[:include]
+        render_jsonapi(
+          @categories,
+          meta: pagination_meta(@categories),
+          include: params[:include],
+        )
       end
 
       # GET /api/v1/categories/:id
       def show
-        render jsonapi: @category, include: params[:include]
+        render_jsonapi(@category, include: params[:include])
       end
 
       # POST /api/v1/categories
       def create
-        authorize Category, policy_class: Publishing::CategoryPolicy
+        authorize(Category, policy_class: Publishing::CategoryPolicy)
 
         @category = current_account.categories.build(category_params)
 
@@ -39,7 +41,7 @@ module Api
         end
 
         if @category.save
-          render jsonapi: @category, status: :created, include: params[:include]
+          render_jsonapi(@category, status: :created, include: params[:include])
         else
           render_error(:unprocessable_entity, detail: @category.errors.full_messages)
         end
@@ -59,7 +61,7 @@ module Api
         end
 
         if @category.update(category_params)
-          render jsonapi: @category, include: params[:include]
+          render_jsonapi(@category, include: params[:include])
         else
           render_error(:unprocessable_entity, detail: @category.errors.full_messages)
         end
@@ -68,7 +70,7 @@ module Api
       # DELETE /api/v1/categories/:id
       def destroy
         @category.destroy!
-        head :no_content
+        head(:no_content)
       rescue ActiveRecord::RecordNotDestroyed => e
         render_error(:unprocessable_entity, detail: e.record.errors.full_messages)
       end
@@ -77,7 +79,7 @@ module Api
 
       def set_category
         @category = Category.find_by!(public_id: params[:id])
-        authorize @category, policy_class: Publishing::CategoryPolicy
+        authorize(@category, policy_class: Publishing::CategoryPolicy)
       end
 
       def category_params

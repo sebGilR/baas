@@ -14,7 +14,10 @@ module Api
     #     expires_in: 1800
     #   ).serializable_hash
     #
-    class AuthenticationSerializer
+    # @example Using class method
+    #   Api::V1::AuthenticationSerializer.render(user: user, ...)
+    #
+    class AuthenticationSerializer < ::BaseSerializer
       def initialize(user:, account:, access_token:, refresh_token:, expires_in:)
         @user = user
         @account = account
@@ -28,8 +31,8 @@ module Api
           data: {
             type: "authentication",
             attributes: {
-              user: user_attributes,
-              account: account_attributes,
+              user: user_data,
+              account: account_data,
               access_token: @access_token,
               refresh_token: @refresh_token,
               token_type: "Bearer",
@@ -41,12 +44,12 @@ module Api
 
       private
 
-      def user_attributes
-        UserSerializer.new(@user).serializable_hash[:data][:attributes]
+      def user_data
+        UserSerializer.new(@user).serializable_hash[:data]
       end
 
-      def account_attributes
-        AccountSerializer.new(@account).serializable_hash[:data][:attributes]
+      def account_data
+        AccountSerializer.new(@account).serializable_hash[:data]
       end
     end
   end

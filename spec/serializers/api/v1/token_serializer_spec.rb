@@ -19,7 +19,7 @@ RSpec.describe(Api::V1::TokenSerializer) do
   let(:attributes) { hash[:data][:attributes] }
 
   it "creates a JSON:API compliant hash" do
-    expect(hash[:data][:type]).to(eq("authentication"))
+    expect(hash[:data][:type]).to(eq("token"))
   end
 
   it "includes the correct token information" do

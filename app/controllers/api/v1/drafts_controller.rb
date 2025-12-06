@@ -10,8 +10,8 @@ module Api
       # GET /api/v1/drafts
       def index
         @drafts = policy_scope(Draft, policy_scope_class: Publishing::DraftPolicy::Scope)
-                  .includes(:blog, :author, :tags)
-                  .ordered
+          .includes(:blog, :author, :tags)
+          .ordered
 
         # Optional filters
         @drafts = @drafts.by_blog(params[:blog_id]) if params[:blog_id].present?
@@ -19,29 +19,31 @@ module Api
 
         @drafts = @drafts.page(params[:page]).per(params[:per_page] || 20)
 
-        render jsonapi: @drafts,
-               meta: pagination_meta(@drafts),
-               include: params[:include]
+        render_jsonapi(
+          @drafts,
+          meta: pagination_meta(@drafts),
+          include: params[:include],
+        )
       end
 
       # GET /api/v1/drafts/:id
       def show
-        render jsonapi: @draft, include: params[:include]
+        render_jsonapi(@draft, include: params[:include])
       end
 
       # POST /api/v1/drafts
       def create
-        authorize Draft, policy_class: Publishing::DraftPolicy
+        authorize(Draft, policy_class: Publishing::DraftPolicy)
 
         result = Publishing::Drafts::CreateDraftService.call(
           account: current_account,
           blog: @blog,
           user: current_user,
-          attributes: draft_params
+          attributes: draft_params,
         )
 
         if result.success?
-          render jsonapi: result.draft, status: :created, include: params[:include]
+          render_jsonapi(result.draft, status: :created, include: params[:include])
         else
           render_error(:unprocessable_entity, detail: result.errors)
         end
@@ -52,11 +54,11 @@ module Api
         result = Publishing::Drafts::UpdateDraftService.call(
           draft: @draft,
           user: current_user,
-          attributes: draft_params
+          attributes: draft_params,
         )
 
         if result.success?
-          render jsonapi: result.draft, include: params[:include]
+          render_jsonapi(result.draft, include: params[:include])
         else
           render_error(:unprocessable_entity, detail: result.errors)
         end
@@ -66,11 +68,11 @@ module Api
       def destroy
         result = Publishing::Drafts::DeleteDraftService.call(
           draft: @draft,
-          user: current_user
+          user: current_user,
         )
 
         if result.success?
-          head :no_content
+          head(:no_content)
         else
           render_error(:unprocessable_entity, detail: result.errors)
         end
@@ -78,17 +80,17 @@ module Api
 
       # POST /api/v1/drafts/:id/autosave
       def autosave
-        authorize @draft, :autosave?, policy_class: Publishing::DraftPolicy
+        authorize(@draft, :autosave?, policy_class: Publishing::DraftPolicy)
 
         result = Publishing::Drafts::AutosaveDraftService.call(
           draft: @draft,
           user: current_user,
           content: autosave_params[:content],
-          title: autosave_params[:title]
+          title: autosave_params[:title],
         )
 
         if result.success?
-          render jsonapi: result.draft
+          render_jsonapi(result.draft)
         else
           render_error(:unprocessable_entity, detail: result.errors)
         end
@@ -96,15 +98,15 @@ module Api
 
       # POST /api/v1/drafts/:id/convert_to_post
       def convert_to_post
-        authorize @draft, :convert_to_post?, policy_class: Publishing::DraftPolicy
+        authorize(@draft, :convert_to_post?, policy_class: Publishing::DraftPolicy)
 
         result = Publishing::Drafts::ConvertToPostService.call(
           draft: @draft,
-          user: current_user
+          user: current_user,
         )
 
         if result.success?
-          render jsonapi: result.post, status: :created
+          render_jsonapi(result.post, status: :created)
         else
           render_error(:unprocessable_entity, detail: result.errors)
         end
@@ -114,7 +116,7 @@ module Api
 
       def set_draft
         @draft = Draft.find_by!(public_id: params[:id])
-        authorize @draft, policy_class: Publishing::DraftPolicy
+        authorize(@draft, policy_class: Publishing::DraftPolicy)
       end
 
       def set_blog
@@ -124,8 +126,11 @@ module Api
 
       def draft_params
         params.require(:data).require(:attributes).permit(
-          :title, :content, :blog_id, :post_id,
-          metadata: {}
+          :title,
+          :content,
+          :blog_id,
+          :post_id,
+          metadata: {},
         )
       end
 

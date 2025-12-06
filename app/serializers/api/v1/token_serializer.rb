@@ -12,7 +12,10 @@ module Api
     #     expires_in: 1800
     #   ).serializable_hash
     #
-    class TokenSerializer
+    # @example Using class method
+    #   Api::V1::TokenSerializer.render(access_token: token, ...)
+    #
+    class TokenSerializer < ::BaseSerializer
       def initialize(access_token:, refresh_token:, expires_in:)
         @access_token = access_token
         @refresh_token = refresh_token
@@ -22,7 +25,7 @@ module Api
       def serializable_hash
         {
           data: {
-            type: "authentication",
+            type: "token",
             attributes: {
               access_token: @access_token,
               refresh_token: @refresh_token,

@@ -3,15 +3,23 @@
 # Base policy class for all Pundit policies
 # Provides common authorization patterns for the application
 class ApplicationPolicy
-  attr_reader :user, :record, :context
+  attr_reader :auth_context, :record
 
-  # @param user [User] The user attempting to perform the action
+  # @param auth_context [AuthorizationContext] The authorization context (user + account)
   # @param record [Object] The record being accessed
-  # @param context [AuthorizationContext] Optional context with additional info (account, etc.)
-  def initialize(user, record, context = nil)
-    @user = user
+  def initialize(auth_context, record)
+    @auth_context = auth_context
     @record = record
-    @context = context
+  end
+
+  # Access the user from the authorization context
+  def user
+    auth_context.is_a?(AuthorizationContext) ? auth_context.user : auth_context
+  end
+
+  # Access the account from the authorization context
+  def user_account
+    auth_context.is_a?(AuthorizationContext) ? auth_context.account : nil
   end
 
   def index?
@@ -43,35 +51,38 @@ class ApplicationPolicy
   end
 
   class Scope
-    attr_reader :user, :scope, :context
+    attr_reader :auth_context, :scope
 
-    def initialize(user, scope, context = nil)
-      @user = user
+    def initialize(auth_context, scope)
+      @auth_context = auth_context
       @scope = scope
-      @context = context
     end
 
     def resolve
       raise NotImplementedError, "You must define #resolve in #{self.class}"
     end
 
-    private
+    # Access the user from the authorization context
+    def user
+      auth_context.is_a?(AuthorizationContext) ? auth_context.user : auth_context
+    end
 
+    # Access the account from the authorization context
     def user_account
-      @user_account ||= context&.account
+      auth_context.is_a?(AuthorizationContext) ? auth_context.account : nil
     end
   end
 
   private
 
-  def user_account
-    @user_account ||= context&.account
-  end
-
   def user_membership
-    return nil unless user && user_account
+    return unless user && user_account
 
-    @user_membership ||= user.account_memberships.find_by(account: user_account)
+    if defined?(@user_membership)
+      @user_membership
+    else
+      @user_membership = user.account_memberships.find_by(account: user_account)
+    end
   end
 
   def user_role
@@ -83,15 +94,15 @@ class ApplicationPolicy
   end
 
   def admin?
-    %w[owner admin].include?(user_role)
+    ["owner", "admin"].include?(user_role)
   end
 
   def editor?
-    %w[owner admin editor].include?(user_role)
+    ["owner", "admin", "editor"].include?(user_role)
   end
 
   def author?
-    %w[owner admin editor author].include?(user_role)
+    ["owner", "admin", "editor", "author"].include?(user_role)
   end
 
   def viewer?

@@ -53,12 +53,13 @@ module ErrorHandling
 
   # Render a single error response
   # @param status [Symbol, Integer] HTTP status code
-  # @param title [String] Short error title
+  # @param title [String] Short error title (optional, derived from status if not provided)
   # @param detail [String] Detailed error message
   # @param code [String, nil] Machine-readable error code
   # @param source [Hash, nil] Pointer to error source
-  def render_error(status, title:, detail:, code: nil, source: nil)
+  def render_error(status, title: nil, detail:, code: nil, source: nil)
     status_code = Rack::Utils.status_code(status)
+    title ||= STATUS_TITLES[status] || Rack::Utils::HTTP_STATUS_CODES[status_code] || "Error"
 
     error_object = {
       status: status_code.to_s,

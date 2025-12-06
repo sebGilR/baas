@@ -9,33 +9,35 @@ module Api
       # GET /api/v1/blogs
       def index
         @blogs = policy_scope(Blog, policy_scope_class: Publishing::BlogPolicy::Scope)
-                 .active
-                 .ordered
+          .active
+          .ordered
 
         @blogs = @blogs.page(params[:page]).per(params[:per_page] || 20)
 
-        render jsonapi: @blogs,
-               meta: pagination_meta(@blogs),
-               include: params[:include]
+        render_jsonapi(
+          @blogs,
+          meta: pagination_meta(@blogs),
+          include: params[:include],
+        )
       end
 
       # GET /api/v1/blogs/:id
       def show
-        render jsonapi: @blog, include: params[:include]
+        render_jsonapi(@blog, include: params[:include])
       end
 
       # POST /api/v1/blogs
       def create
-        authorize Blog, policy_class: Publishing::BlogPolicy
+        authorize(Blog, policy_class: Publishing::BlogPolicy)
 
         result = Publishing::Blogs::CreateBlogService.call(
           account: current_account,
           user: current_user,
-          attributes: blog_params
+          attributes: blog_params,
         )
 
         if result.success?
-          render jsonapi: result.blog, status: :created
+          render_jsonapi(result.blog, status: :created)
         else
           render_error(:unprocessable_entity, detail: result.errors)
         end
@@ -46,11 +48,11 @@ module Api
         result = Publishing::Blogs::UpdateBlogService.call(
           blog: @blog,
           user: current_user,
-          attributes: blog_params
+          attributes: blog_params,
         )
 
         if result.success?
-          render jsonapi: result.blog
+          render_jsonapi(result.blog)
         else
           render_error(:unprocessable_entity, detail: result.errors)
         end
@@ -60,11 +62,11 @@ module Api
       def destroy
         result = Publishing::Blogs::DeleteBlogService.call(
           blog: @blog,
-          user: current_user
+          user: current_user,
         )
 
         if result.success?
-          head :no_content
+          head(:no_content)
         else
           render_error(:unprocessable_entity, detail: result.errors)
         end
@@ -74,13 +76,16 @@ module Api
 
       def set_blog
         @blog = Blog.find_by!(public_id: params[:id])
-        authorize @blog, policy_class: Publishing::BlogPolicy
+        authorize(@blog, policy_class: Publishing::BlogPolicy)
       end
 
       def blog_params
         params.require(:data).require(:attributes).permit(
-          :name, :slug, :description, :status,
-          settings: {}
+          :name,
+          :slug,
+          :description,
+          :status,
+          settings: {},
         )
       end
     end

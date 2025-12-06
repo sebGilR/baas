@@ -23,12 +23,12 @@ RSpec.describe(Api::V1::AuthenticationSerializer) do
   let(:attributes) { hash[:data][:attributes] }
 
   before do
-    # Mocking the dependency serializers
+    # Mocking the dependency serializers to return full data objects
     allow(Api::V1::UserSerializer).to(receive(:new).with(user).and_return(
-      double(serializable_hash: { data: { attributes: { name: user.name, email: user.email } } }),
+      double(serializable_hash: { data: { id: user.public_id, type: "user", attributes: { name: user.name, email: user.email } } }),
     ))
     allow(Api::V1::AccountSerializer).to(receive(:new).with(account).and_return(
-      double(serializable_hash: { data: { attributes: { name: account.name } } }),
+      double(serializable_hash: { data: { id: account.public_id, type: "account", attributes: { name: account.name } } }),
     ))
   end
 
@@ -43,17 +43,19 @@ RSpec.describe(Api::V1::AuthenticationSerializer) do
     expect(attributes[:expires_in]).to(eq(expires_in))
   end
 
-  it "includes the serialized user object" do
+  it "includes the serialized user data object" do
     # Trigger serialization
     attributes
     expect(Api::V1::UserSerializer).to(have_received(:new).with(user))
-    expect(attributes[:user]).to(eq({ name: user.name, email: user.email }))
+    expect(attributes[:user][:type]).to(eq("user"))
+    expect(attributes[:user][:attributes][:name]).to(eq(user.name))
   end
 
-  it "includes the serialized account object" do
+  it "includes the serialized account data object" do
     # Trigger serialization
     attributes
     expect(Api::V1::AccountSerializer).to(have_received(:new).with(account))
-    expect(attributes[:account]).to(eq({ name: account.name }))
+    expect(attributes[:account][:type]).to(eq("account"))
+    expect(attributes[:account][:attributes][:name]).to(eq(account.name))
   end
 end

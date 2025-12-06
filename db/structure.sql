@@ -44,18 +44,18 @@ COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UU
 CREATE FUNCTION public.gen_uuidv7() RETURNS uuid
     LANGUAGE plpgsql
     AS $$
-declare
+DECLARE
   unix_ts_ms bytea;
   rand_bytes bytea;
   uuid_bytes bytea;
-begin
+BEGIN
   unix_ts_ms = decode(lpad(to_hex(floor(extract(epoch from clock_timestamp()) * 1000)::bigint), 12, '0'), 'hex');
   rand_bytes = gen_random_bytes(10);
   uuid_bytes = unix_ts_ms || rand_bytes;
   uuid_bytes = set_byte(uuid_bytes, 6, (get_byte(uuid_bytes, 6) & 15) | 112);
   uuid_bytes = set_byte(uuid_bytes, 8, (get_byte(uuid_bytes, 8) & 63) | 128);
-  return encode(uuid_bytes, 'hex')::uuid;
-end
+  RETURN encode(uuid_bytes, 'hex')::uuid;
+END
 $$;
 
 

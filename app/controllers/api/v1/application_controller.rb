@@ -7,40 +7,19 @@ module Api
     # pagination, filtering, and sorting capabilities
     class ApplicationController < ::ApplicationController
       include Pundit::Authorization
+      include Authenticatable
       include ErrorHandling
       include Paginatable
       include Filterable
       include Sortable
+      include JsonapiRenderable
 
       before_action :authenticate_user!
 
-      private
-
-      # Returns the current authenticated user
-      # To be implemented once JWT authentication is set up
-      def current_user
-        @current_user ||= nil # Will be set by JWT authentication
-      end
-
-      # Returns the current tenant account
-      # To be implemented once multi-tenancy is set up
-      def current_account
-        @current_account ||= nil # Will be set by tenant context
-      end
-
-      # Authenticate user via JWT token
-      # To be implemented
-      def authenticate_user!
-        # TODO: Implement JWT authentication
-        # For now, return unauthorized
-        return if current_user
-
-        render_error(
-          :unauthorized,
-          title: "Unauthorized",
-          detail: "You must be authenticated to access this resource.",
-          code: ServiceResult::Codes::TOKEN_INVALID,
-        )
+      # Override pundit_user to provide AuthorizationContext
+      # This allows policies to access both user and account
+      def pundit_user
+        @pundit_user ||= AuthorizationContext.new(user: current_user, account: current_account)
       end
 
       # Helper to authorize collection with tenant scoping
