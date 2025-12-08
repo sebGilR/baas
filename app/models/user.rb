@@ -9,6 +9,7 @@ class User < ApplicationRecord
   has_many :account_memberships, dependent: :destroy
   has_many :accounts, through: :account_memberships
   has_many :refresh_tokens, dependent: :destroy
+  has_many :api_keys, dependent: :destroy
 
   # Validations
   validates :email, presence: true, uniqueness: { case_sensitive: false }

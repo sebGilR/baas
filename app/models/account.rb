@@ -11,6 +11,7 @@ class Account < ApplicationRecord
   has_many :drafts, dependent: :destroy
   has_many :tags, dependent: :destroy
   has_many :categories, dependent: :destroy
+  has_many :api_keys, dependent: :destroy
 
   # Validations
   validates :name, presence: true, length: { minimum: 2 }

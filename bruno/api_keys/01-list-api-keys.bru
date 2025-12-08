@@ -1,0 +1,32 @@
+meta {
+  name: 01 - List API Keys
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/api/v1/api_keys
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+  Authorization: Bearer {{access_token}}
+}
+
+params:query {
+  ~status: active
+}
+
+tests {
+  test("Status is 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response is JSON:API format", function() {
+    const body = res.getBody();
+    expect(body).to.have.property("data");
+  });
+}

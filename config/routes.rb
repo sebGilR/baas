@@ -22,6 +22,11 @@ Rails.application.routes.draw do
       # Core resources
       resources :accounts, only: [:index, :show, :create, :update]
       resources :users, only: [:index, :show, :update]
+      resources :api_keys, only: [:index, :show, :create, :update, :destroy] do
+        member do
+          post :revoke
+        end
+      end
 
       # Publishing resources
       resources :blogs

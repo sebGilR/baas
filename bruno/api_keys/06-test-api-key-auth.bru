@@ -1,0 +1,47 @@
+meta {
+  name: 06 - Test API Key Auth
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{base_url}}/api/v1/posts
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+  Authorization: ApiKey {{api_key_token}}
+}
+
+docs {
+  # Test API Key Authentication
+  
+  This request tests using an API key for authentication instead of a JWT Bearer token.
+  
+  ## Usage
+  
+  1. First, create an API key using "02 - Create API Key"
+  2. Copy the token from the response (only shown once!)
+  3. The token is automatically saved to `api_key_token` environment variable
+  4. Run this request to test API key authentication
+  
+  ## Authorization Header Format
+  
+  ```
+  Authorization: ApiKey ak_live_XXXXXXXX.secrethere
+  ```
+}
+
+tests {
+  test("Status is 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response is JSON:API format", function() {
+    const body = res.getBody();
+    expect(body).to.have.property("data");
+  });
+}

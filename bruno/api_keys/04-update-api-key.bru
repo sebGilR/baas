@@ -1,0 +1,39 @@
+meta {
+  name: 04 - Update API Key
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{base_url}}/api/v1/api_keys/{{api_key_id}}
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+  Authorization: Bearer {{access_token}}
+}
+
+body:json {
+  {
+    "data": {
+      "type": "api_key",
+      "attributes": {
+        "name": "Renamed API Key"
+      }
+    }
+  }
+}
+
+tests {
+  test("Status is 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Name is updated", function() {
+    const body = res.getBody();
+    expect(body.data.attributes.name).to.equal("Renamed API Key");
+  });
+}

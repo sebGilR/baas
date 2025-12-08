@@ -1,0 +1,35 @@
+meta {
+  name: 03 - Get API Key
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{base_url}}/api/v1/api_keys/{{api_key_id}}
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+  Authorization: Bearer {{access_token}}
+}
+
+tests {
+  test("Status is 200 OK", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response is JSON:API format", function() {
+    const body = res.getBody();
+    expect(body).to.have.property("data");
+    expect(body.data).to.have.property("type", "api_key");
+  });
+  
+  test("Response does not contain secret", function() {
+    const body = res.getBody();
+    expect(body.data.attributes).to.not.have.property("token");
+    expect(body.data.attributes).to.not.have.property("secret");
+  });
+}

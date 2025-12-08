@@ -38,6 +38,20 @@ COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UU
 
 
 --
+-- Name: vector; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION vector; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION vector IS 'vector data type and ivfflat and hnsw access methods';
+
+
+--
 -- Name: gen_uuidv7(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -131,6 +145,48 @@ CREATE SEQUENCE public.accounts_id_seq
 --
 
 ALTER SEQUENCE public.accounts_id_seq OWNED BY public.accounts.id;
+
+
+--
+-- Name: api_keys; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.api_keys (
+    id bigint NOT NULL,
+    public_id uuid DEFAULT public.gen_uuidv7() NOT NULL,
+    user_id bigint NOT NULL,
+    account_id bigint NOT NULL,
+    name character varying NOT NULL,
+    prefix character varying NOT NULL,
+    secret_digest character varying NOT NULL,
+    scopes jsonb DEFAULT '[]'::jsonb NOT NULL,
+    environment integer DEFAULT 0 NOT NULL,
+    expires_at timestamp(6) without time zone,
+    revoked_at timestamp(6) without time zone,
+    last_used_at timestamp(6) without time zone,
+    last_used_ip character varying,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: api_keys_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.api_keys_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: api_keys_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.api_keys_id_seq OWNED BY public.api_keys.id;
 
 
 --
@@ -509,6 +565,13 @@ ALTER TABLE ONLY public.accounts ALTER COLUMN id SET DEFAULT nextval('public.acc
 
 
 --
+-- Name: api_keys id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.api_keys ALTER COLUMN id SET DEFAULT nextval('public.api_keys_id_seq'::regclass);
+
+
+--
 -- Name: blogs id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -585,6 +648,14 @@ ALTER TABLE ONLY public.account_memberships
 
 ALTER TABLE ONLY public.accounts
     ADD CONSTRAINT accounts_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: api_keys api_keys_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.api_keys
+    ADD CONSTRAINT api_keys_pkey PRIMARY KEY (id);
 
 
 --
@@ -715,6 +786,48 @@ CREATE UNIQUE INDEX index_accounts_on_public_id ON public.accounts USING btree (
 --
 
 CREATE UNIQUE INDEX index_accounts_on_slug ON public.accounts USING btree (slug);
+
+
+--
+-- Name: index_api_keys_on_account_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_api_keys_on_account_id ON public.api_keys USING btree (account_id);
+
+
+--
+-- Name: index_api_keys_on_account_id_and_revoked_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_api_keys_on_account_id_and_revoked_at ON public.api_keys USING btree (account_id, revoked_at);
+
+
+--
+-- Name: index_api_keys_on_prefix; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_api_keys_on_prefix ON public.api_keys USING btree (prefix);
+
+
+--
+-- Name: index_api_keys_on_public_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_api_keys_on_public_id ON public.api_keys USING btree (public_id);
+
+
+--
+-- Name: index_api_keys_on_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_api_keys_on_user_id ON public.api_keys USING btree (user_id);
+
+
+--
+-- Name: index_api_keys_on_user_id_and_account_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_api_keys_on_user_id_and_account_id ON public.api_keys USING btree (user_id, account_id);
 
 
 --
@@ -1071,6 +1184,14 @@ ALTER TABLE ONLY public.refresh_tokens
 
 
 --
+-- Name: api_keys fk_rails_32c28d0dc2; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.api_keys
+    ADD CONSTRAINT fk_rails_32c28d0dc2 FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
 -- Name: blogs fk_rails_39105cea0c; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1199,6 +1320,14 @@ ALTER TABLE ONLY public.revisions
 
 
 --
+-- Name: api_keys fk_rails_f4470e16d5; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.api_keys
+    ADD CONSTRAINT fk_rails_f4470e16d5 FOREIGN KEY (account_id) REFERENCES public.accounts(id);
+
+
+--
 -- Name: posts fk_rails_ff02f0408e; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1213,6 +1342,7 @@ ALTER TABLE ONLY public.posts
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20251206173009'),
 ('20251130203859'),
 ('20251130203228'),
 ('20251130203226'),

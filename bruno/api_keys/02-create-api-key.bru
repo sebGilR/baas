@@ -1,0 +1,61 @@
+meta {
+  name: 02 - Create API Key
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/api/v1/api_keys
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+  Authorization: Bearer {{access_token}}
+}
+
+body:json {
+  {
+    "data": {
+      "type": "api_key",
+      "attributes": {
+        "name": "Postman Development Key",
+        "scopes": ["posts:read", "posts:write", "blogs:read", "drafts:read", "drafts:write"],
+        "environment": "live",
+        "expires_in_days": 90
+      }
+    }
+  }
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+    const body = res.getBody();
+    if (body.data && body.data.id) {
+      bru.setEnvVar("api_key_id", body.data.id);
+    }
+    if (body.data && body.data.attributes && body.data.attributes.token) {
+      bru.setEnvVar("api_key_token", body.data.attributes.token);
+      console.log("⚠️  IMPORTANT: Save this token! It will not be shown again.");
+      console.log("Token:", body.data.attributes.token);
+    }
+  }
+}
+
+tests {
+  test("Status is 201 Created", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Response contains token", function() {
+    const body = res.getBody();
+    expect(body.data.attributes).to.have.property("token");
+  });
+  
+  test("Response contains warning about token", function() {
+    const body = res.getBody();
+    expect(body.meta.warning).to.include("Store this token securely");
+  });
+}
