@@ -56,7 +56,7 @@ group :development do
   gem "brakeman", "~> 7.1", require: false
   gem "bundler-audit", "~> 0.9", require: false
   gem "debug", platforms: [:mri, :windows], require: "debug/prelude"
-  gem "rubocop", "~> 1.50", require: false
+  gem "rubocop", "~> 1.82", require: false
   gem "rubocop-rails", "~> 2.34", require: false
   gem "rubocop-rspec", "~> 3.8", require: false
   gem "rubocop-shopify", require: false
