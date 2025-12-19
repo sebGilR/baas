@@ -107,28 +107,65 @@ See [AUTH_FLOW.md](../project_docs/baas/AUTH_FLOW.md) for authentication details
 
 ### Docker Commands (Recommended)
 
+Use the `bin/baas` helper script for common Docker operations:
+
 ```bash
 # Start services
-bin/dev-docker up
+bin/baas up
 
-# View logs
-bin/dev-docker logs -f
+# View logs (use -f for follow)
+bin/baas logs -f
 
 # Rails console
-bin/dev-docker console
+bin/baas console
 
 # Run tests
-bin/dev-docker test
+bin/baas test
+
+# Run specific tests
+bin/baas test spec/models/
 
 # Run migrations
-bin/dev-docker migrate
+bin/baas migrate
 
 # Database console
-bin/dev-docker psql
+bin/baas psql
+
+# Open bash shell in container
+bin/baas bash
 
 # Stop services
-bin/dev-docker down
+bin/baas down
+
+# Rebuild containers
+bin/baas build
+
+# Show all available commands
+bin/baas help
 ```
+
+#### All `bin/baas` Commands
+
+| Command | Description |
+|---------|-------------|
+| `up` | Start all services |
+| `down` | Stop all services |
+| `restart` | Restart all services |
+| `build` | Rebuild containers |
+| `logs` | Show logs (use -f for follow) |
+| `console` | Open Rails console |
+| `bash` | Open bash shell in web container |
+| `psql` | Open PostgreSQL console |
+| `redis-cli` | Open Redis CLI |
+| `test [path]` | Run RSpec tests |
+| `rubocop` | Run RuboCop linter |
+| `bundle` | Run bundle install |
+| `migrate` | Run pending migrations |
+| `rollback` | Rollback last migration |
+| `db:reset` | Reset database |
+| `db:seed` | Seed database |
+| `clean` | Clean up Docker resources |
+| `status` | Show service status |
 
 ### Local Commands
 
@@ -176,28 +213,67 @@ spec/
 
 ## 📚 API Documentation
 
-API endpoints follow JSON:API v1.1 specification:
+### Interactive Documentation (Swagger UI)
+
+Access the interactive API documentation at: **http://localhost:3000/api-docs**
+
+The documentation is built with OpenAPI 3.1 specification and provides:
+- Interactive request/response examples
+- Authentication testing with JWT tokens
+- Schema definitions for all resources
+- Try-it-out functionality for all endpoints
+
+### API Endpoints
+
+All endpoints follow JSON:API v1.1 specification:
 
 ```
+# Authentication
 POST   /api/v1/auth/register       # Register new user
 POST   /api/v1/auth/login          # Login and get tokens
 POST   /api/v1/auth/refresh        # Refresh access token
 DELETE /api/v1/auth/logout         # Logout and revoke tokens
 
+# Blogs
 GET    /api/v1/blogs               # List blogs
 POST   /api/v1/blogs               # Create blog
 GET    /api/v1/blogs/:id           # Get blog
 PATCH  /api/v1/blogs/:id           # Update blog
 DELETE /api/v1/blogs/:id           # Delete blog
 
+# Posts
 GET    /api/v1/posts               # List posts
 POST   /api/v1/posts               # Create post
 GET    /api/v1/posts/:id           # Get post
 PATCH  /api/v1/posts/:id           # Update post
 DELETE /api/v1/posts/:id           # Delete post
+POST   /api/v1/posts/:id/publish   # Publish post
+POST   /api/v1/posts/:id/unpublish # Unpublish post
+
+# Drafts
+GET    /api/v1/drafts              # List drafts
+POST   /api/v1/drafts              # Create draft
+GET    /api/v1/drafts/:id          # Get draft
+PATCH  /api/v1/drafts/:id          # Update draft
+DELETE /api/v1/drafts/:id          # Delete draft
+POST   /api/v1/drafts/:id/autosave # Autosave draft
+POST   /api/v1/drafts/:id/convert_to_post # Convert to post
+
+# Tags & Categories
+GET    /api/v1/tags                # List tags
+POST   /api/v1/tags                # Create tag
+GET    /api/v1/categories          # List categories
+POST   /api/v1/categories          # Create category
+
+# API Keys
+GET    /api/v1/api_keys            # List API keys
+POST   /api/v1/api_keys            # Create API key
+POST   /api/v1/api_keys/:id/revoke # Revoke API key
 ```
 
-OpenAPI 3.1 specification (coming soon): `/api/docs`
+### OpenAPI Specification
+
+The raw OpenAPI 3.1 spec is available at: `/api-docs/v1/swagger.yaml`
 
 ## 🔧 Configuration
 

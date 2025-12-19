@@ -66,6 +66,36 @@ services:
         bin/rails server -b 0.0.0.0
       "
 
+  # Test runner service
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      RAILS_ENV: test
+      DATABASE_URL: postgres://postgres:postgres@db:5432/baas_test
+      DATABASE_HOST: db
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
+      REDIS_URL: redis://redis:6379/1
+      RAILS_LOG_TO_STDOUT: "true"
+    volumes:
+      - .:/rails
+      - rails_cache:/rails/tmp/cache
+      - rails_storage:/rails/storage
+    stdin_open: true
+    tty: true
+    command: >
+      bash -c "
+        echo 'Test container started.' &&
+        sleep infinity
+      "
+
 volumes:
   postgres_data:
   redis_data:

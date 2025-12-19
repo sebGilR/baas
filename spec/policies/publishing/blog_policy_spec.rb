@@ -7,7 +7,7 @@ RSpec.describe(Publishing::BlogPolicy, type: :policy) do
   let(:blog) { create(:blog, account: account) }
 
   context "for an owner" do
-    subject { described_class.new(user, blog, AuthorizationContext.new(user: user, account: account)) }
+    subject { described_class.new(AuthorizationContext.new(user: user, account: account), blog) }
 
     let(:user) { create(:user) }
     let!(:membership) { create(:account_membership, user: user, account: account, role: :owner) }
@@ -18,14 +18,14 @@ RSpec.describe(Publishing::BlogPolicy, type: :policy) do
     it { is_expected.to permit_action(:destroy) }
 
     context "when creating" do
-      subject { described_class.new(user, Blog, AuthorizationContext.new(user: user, account: account)) }
+      subject { described_class.new(AuthorizationContext.new(user: user, account: account), Blog) }
 
       it { is_expected.to permit_action(:create) }
     end
   end
 
   context "for an admin" do
-    subject { described_class.new(user, blog, AuthorizationContext.new(user: user, account: account)) }
+    subject { described_class.new(AuthorizationContext.new(user: user, account: account), blog) }
 
     let(:user) { create(:user) }
     let!(:membership) { create(:account_membership, user: user, account: account, role: :admin) }
@@ -34,7 +34,7 @@ RSpec.describe(Publishing::BlogPolicy, type: :policy) do
   end
 
   context "for an editor" do
-    subject { described_class.new(user, blog, AuthorizationContext.new(user: user, account: account)) }
+    subject { described_class.new(AuthorizationContext.new(user: user, account: account), blog) }
 
     let(:user) { create(:user) }
     let!(:membership) { create(:account_membership, user: user, account: account, role: :editor) }
@@ -45,7 +45,7 @@ RSpec.describe(Publishing::BlogPolicy, type: :policy) do
   end
 
   context "for an author" do
-    subject { described_class.new(user, blog, AuthorizationContext.new(user: user, account: account)) }
+    subject { described_class.new(AuthorizationContext.new(user: user, account: account), blog) }
 
     let(:user) { create(:user) }
     let!(:membership) { create(:account_membership, user: user, account: account, role: :author) }
@@ -58,7 +58,7 @@ RSpec.describe(Publishing::BlogPolicy, type: :policy) do
   end
 
   context "for a user without membership" do
-    subject { described_class.new(user, blog, AuthorizationContext.new(user: user, account: account)) }
+    subject { described_class.new(AuthorizationContext.new(user: user, account: account), blog) }
 
     let(:user) { create(:user) }
 
@@ -76,7 +76,7 @@ RSpec.describe(Publishing::BlogPolicy, type: :policy) do
     it "returns only blogs in the user's account" do
       # Note: Pundit scopes need context with account, this test may need adjustment
       # based on how the scope is called with AuthorizationContext
-      scope = described_class::Scope.new(user, Blog.all, AuthorizationContext.new(user: user, account: account))
+      scope = described_class::Scope.new(AuthorizationContext.new(user: user, account: account), Blog.all)
       expect(scope.resolve).to(include(blog_in_account))
       expect(scope.resolve).not_to(include(blog_in_other_account))
     end

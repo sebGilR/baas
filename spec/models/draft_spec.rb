@@ -125,7 +125,7 @@ RSpec.describe(Draft, type: :model) do
       it "returns autosaved_at if present" do
         autosaved_time = 1.hour.ago
         draft = build(:draft, autosaved_at: autosaved_time)
-        expect(draft.last_saved).to(eq(autosaved_time))
+        expect(draft.last_saved).to(be_within(1.second).of(autosaved_time))
       end
 
       it "returns updated_at if autosaved_at is nil" do

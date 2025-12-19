@@ -40,22 +40,23 @@ RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y build-essential git libpq-dev pkg-config libyaml-dev && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
-# Create bundle directory and switch user
-RUN mkdir -p /home/rails/bundle && chown -R rails:rails /home/rails/bundle
+# Create bundle directory
+RUN mkdir -p /home/rails/bundle
+
+# Copy application code and gems
+COPY . .
+RUN chown -R rails:rails /rails /home/rails/bundle
+
+# Switch to non-root user
+USER 1000:1000
 
 # Install application gems
-COPY --chown=rails:rails Gemfile Gemfile.lock ./
-USER 1000:1000
 RUN bundle install && \
     rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \
     bundle exec bootsnap precompile --gemfile
 
-# Copy application code
-COPY . .
-
 # Precompile bootsnap code for faster boot times
 RUN bundle exec bootsnap precompile app/ lib/
-
 
 # Final stage for app image
 FROM base

@@ -9,7 +9,7 @@ RSpec.describe(Publishing::DraftPolicy, type: :policy) do
   let(:draft) { create(:draft, account: account, blog: blog, author: draft_author) }
 
   context "for an owner" do
-    subject { described_class.new(user, draft, AuthorizationContext.new(user: user, account: account)) }
+    subject { described_class.new(AuthorizationContext.new(user: user, account: account), draft) }
 
     let(:user) { create(:user) }
     let!(:membership) { create(:account_membership, user: user, account: account, role: :owner) }
@@ -24,7 +24,7 @@ RSpec.describe(Publishing::DraftPolicy, type: :policy) do
   end
 
   context "for an editor" do
-    subject { described_class.new(user, draft, AuthorizationContext.new(user: user, account: account)) }
+    subject { described_class.new(AuthorizationContext.new(user: user, account: account), draft) }
 
     let(:user) { create(:user) }
     let!(:membership) { create(:account_membership, user: user, account: account, role: :editor) }
@@ -39,7 +39,7 @@ RSpec.describe(Publishing::DraftPolicy, type: :policy) do
   end
 
   context "for an author" do
-    subject { described_class.new(user, draft, AuthorizationContext.new(user: user, account: account)) }
+    subject { described_class.new(AuthorizationContext.new(user: user, account: account), draft) }
 
     let(:user) { create(:user) }
     let!(:membership) { create(:account_membership, user: user, account: account, role: :author) }
@@ -75,18 +75,18 @@ RSpec.describe(Publishing::DraftPolicy, type: :policy) do
 
     context "for an author" do
       it "returns only the author's own drafts" do
-        scope = described_class::Scope.new(user, Draft.all, AuthorizationContext.new(user: user, account: account))
+        scope = described_class::Scope.new(AuthorizationContext.new(user: user, account: account), Draft.all)
         expect(scope.resolve).to(include(own_draft))
         expect(scope.resolve).not_to(include(other_draft))
         expect(scope.resolve).not_to(include(draft_in_other_account))
       end
-    end
+    end # <--- Added this 'end'
 
     context "for an editor" do
       let!(:membership) { create(:account_membership, user: user, account: account, role: :editor) }
 
       it "returns all drafts in the account" do
-        scope = described_class::Scope.new(user, Draft.all, AuthorizationContext.new(user: user, account: account))
+        scope = described_class::Scope.new(AuthorizationContext.new(user: user, account: account), Draft.all)
         expect(scope.resolve).to(include(own_draft, other_draft))
         expect(scope.resolve).not_to(include(draft_in_other_account))
       end

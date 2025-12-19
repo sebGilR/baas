@@ -7,7 +7,7 @@ RSpec.describe(Publishing::TagPolicy, type: :policy) do
   let(:tag) { create(:tag, account: account) }
 
   context "for an owner" do
-    subject { described_class.new(user, tag, AuthorizationContext.new(user: user, account: account)) }
+    subject { described_class.new(AuthorizationContext.new(user: user, account: account), tag) }
 
     let(:user) { create(:user) }
     let!(:membership) { create(:account_membership, user: user, account: account, role: :owner) }
@@ -20,7 +20,7 @@ RSpec.describe(Publishing::TagPolicy, type: :policy) do
   end
 
   context "for an admin" do
-    subject { described_class.new(user, tag, AuthorizationContext.new(user: user, account: account)) }
+    subject { described_class.new(AuthorizationContext.new(user: user, account: account), tag) }
 
     let(:user) { create(:user) }
     let!(:membership) { create(:account_membership, user: user, account: account, role: :admin) }
@@ -29,7 +29,7 @@ RSpec.describe(Publishing::TagPolicy, type: :policy) do
   end
 
   context "for an editor" do
-    subject { described_class.new(user, tag, AuthorizationContext.new(user: user, account: account)) }
+    subject { described_class.new(AuthorizationContext.new(user: user, account: account), tag) }
 
     let(:user) { create(:user) }
     let!(:membership) { create(:account_membership, user: user, account: account, role: :editor) }
@@ -42,7 +42,7 @@ RSpec.describe(Publishing::TagPolicy, type: :policy) do
   end
 
   context "for an author" do
-    subject { described_class.new(user, tag, AuthorizationContext.new(user: user, account: account)) }
+    subject { described_class.new(AuthorizationContext.new(user: user, account: account), tag) }
 
     let(:user) { create(:user) }
     let!(:membership) { create(:account_membership, user: user, account: account, role: :author) }
@@ -61,7 +61,7 @@ RSpec.describe(Publishing::TagPolicy, type: :policy) do
     let!(:tag_in_other_account) { create(:tag) }
 
     it "returns only tags in the user's account" do
-      scope = described_class::Scope.new(user, Tag.all, AuthorizationContext.new(user: user, account: account))
+      scope = described_class::Scope.new(AuthorizationContext.new(user: user, account: account), Tag.all)
       expect(scope.resolve).to(include(tag_in_account))
       expect(scope.resolve).not_to(include(tag_in_other_account))
     end

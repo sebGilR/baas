@@ -9,7 +9,7 @@ RSpec.describe(Publishing::PostPolicy, type: :policy) do
   let(:post) { create(:post, account: account, blog: blog, author: author) }
 
   context "for an owner" do
-    subject { described_class.new(user, post, AuthorizationContext.new(user: user, account: account)) }
+    subject { described_class.new(AuthorizationContext.new(user: user, account: account), post) }
 
     let(:user) { create(:user) }
     let!(:membership) { create(:account_membership, user: user, account: account, role: :owner) }
@@ -24,7 +24,7 @@ RSpec.describe(Publishing::PostPolicy, type: :policy) do
   end
 
   context "for an editor" do
-    subject { described_class.new(user, post, AuthorizationContext.new(user: user, account: account)) }
+    subject { described_class.new(AuthorizationContext.new(user: user, account: account), post) }
 
     let(:user) { create(:user) }
     let!(:membership) { create(:account_membership, user: user, account: account, role: :editor) }
@@ -39,7 +39,7 @@ RSpec.describe(Publishing::PostPolicy, type: :policy) do
   end
 
   context "for an author" do
-    subject { described_class.new(user, post, AuthorizationContext.new(user: user, account: account)) }
+    subject { described_class.new(AuthorizationContext.new(user: user, account: account), post) }
 
     let(:user) { create(:user) }
     let!(:membership) { create(:account_membership, user: user, account: account, role: :author) }
@@ -82,7 +82,7 @@ RSpec.describe(Publishing::PostPolicy, type: :policy) do
     let!(:post_in_other_account) { create(:post) }
 
     it "returns only posts in the user's account" do
-      scope = described_class::Scope.new(user, Post.all, AuthorizationContext.new(user: user, account: account))
+      scope = described_class::Scope.new(AuthorizationContext.new(user: user, account: account), Post.all)
       expect(scope.resolve).to(include(post_in_account))
       expect(scope.resolve).not_to(include(post_in_other_account))
     end

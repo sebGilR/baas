@@ -5,7 +5,7 @@
 
 **Goal:** Working registration, login, refresh, and logout endpoints with full test coverage
 
-**Status:** Ready to implement  
+**Status:** Implemented  
 **Created:** November 23, 2025
 
 ---
@@ -1070,18 +1070,18 @@ Authentication Collection/
 
 ## ✅ **Acceptance Criteria**
 
-- [ ] User can register with email/password
-- [ ] Registration auto-creates account with owner role
-- [ ] User can login and receive access + refresh tokens
-- [ ] Access token contains user_id, account_id, role
-- [ ] User can refresh access token with refresh token
-- [ ] Refresh token rotation works (old token revoked)
-- [ ] User can logout (revokes refresh token)
-- [ ] All endpoints return JSON:API format
-- [ ] All services have >80% test coverage
-- [ ] All request specs pass
-- [ ] All model specs pass
-- [ ] Bruno collection can test all endpoints
+- [x] User can register with email/password
+- [x] Registration auto-creates account with owner role
+- [x] User can login and receive access + refresh tokens
+- [x] Access token contains user_id, account_id, role
+- [x] User can refresh access token with refresh token
+- [x] Refresh token rotation works (old token revoked)
+- [x] User can logout (revokes refresh token)
+- [x] All endpoints return JSON:API format
+- [x] All services have >80% test coverage
+- [x] All request specs pass
+- [x] All model specs pass
+- [x] Bruno collection can test all endpoints
 
 ---
 

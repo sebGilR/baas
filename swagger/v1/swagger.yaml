@@ -1,0 +1,2117 @@
+openapi: 3.1.0
+info:
+  title: BaaS - Blog as a Service API
+  version: v1
+  description: |
+    Backend API for an AI-powered blogging platform with multi-tenancy support.
+    
+    ## Authentication
+    
+    This API uses JWT Bearer tokens for authentication. To authenticate:
+    1. Register a new account via `POST /api/v1/auth/register`
+    2. Login via `POST /api/v1/auth/login` to receive access and refresh tokens
+    3. Include the access token in the `Authorization` header: `Bearer <token>`
+    4. When the access token expires (15 minutes), use `POST /api/v1/auth/refresh` to get a new one
+    
+    ## JSON:API Format
+    
+    All endpoints follow the [JSON:API v1.1](https://jsonapi.org/) specification.
+    
+    Request bodies should be structured as:
+    ```json
+    {
+      "data": {
+        "type": "resource_type",
+        "attributes": { ... }
+      }
+    }
+    ```
+    
+    ## Multi-Tenancy
+    
+    Resources are scoped to accounts. Users can belong to multiple accounts.
+    The current account is determined by the JWT token.
+    
+    ## Rate Limiting
+    
+    API requests are rate limited. Check response headers for limit info.
+  contact:
+    name: BaaS Support
+    email: support@baas.example.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3000
+    description: Development server
+  - url: https://api.baas.example.com
+    description: Production server
+
+tags:
+  - name: Authentication
+    description: User authentication and token management
+  - name: Blogs
+    description: Blog management endpoints
+  - name: Posts
+    description: Post management endpoints
+  - name: Drafts
+    description: Draft management endpoints
+  - name: Tags
+    description: Tag management endpoints
+  - name: Categories
+    description: Category management endpoints
+  - name: API Keys
+    description: API key management endpoints
+  - name: Health
+    description: Health check endpoints
+
+security:
+  - bearer_auth: []
+
+paths:
+  # ============================================
+  # Health Endpoints
+  # ============================================
+  /api/v1/health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      operationId: healthCheck
+      security: []
+      description: Returns the health status of the API. No authentication required.
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  timestamp:
+                    type: string
+                    format: date-time
+                  version:
+                    type: string
+                    example: 1.0.0
+
+  /api/v1/public:
+    get:
+      tags:
+        - Health
+      summary: Public endpoint
+      operationId: publicEndpoint
+      security: []
+      description: Public endpoint for testing. No authentication required.
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Welcome to BaaS API
+
+  # ============================================
+  # Authentication Endpoints
+  # ============================================
+  /api/v1/auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new user
+      operationId: registerUser
+      security: []
+      description: Creates a new user account with an associated organization account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationResponse'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login user
+      operationId: loginUser
+      security: []
+      description: Authenticates a user and returns JWT access and refresh tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh access token
+      operationId: refreshToken
+      security: []
+      description: Exchanges a valid refresh token for a new access token and rotated refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '401':
+          description: Invalid refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/auth/logout:
+    delete:
+      tags:
+        - Authentication
+      summary: Logout user
+      operationId: logoutUser
+      description: Revokes the current refresh token and invalidates the session
+      responses:
+        '204':
+          description: Logged out successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ============================================
+  # Blog Endpoints
+  # ============================================
+  /api/v1/blogs:
+    get:
+      tags:
+        - Blogs
+      summary: List all blogs
+      operationId: listBlogs
+      description: Returns a paginated list of blogs for the current account
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - $ref: '#/components/parameters/IncludeParam'
+      responses:
+        '200':
+          description: Blogs retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Blog'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - Blogs
+      summary: Create a blog
+      operationId: createBlog
+      description: Creates a new blog for the current account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlogCreateRequest'
+      responses:
+        '201':
+          description: Blog created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Blog'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/blogs/{id}:
+    parameters:
+      - $ref: '#/components/parameters/ResourceId'
+
+    get:
+      tags:
+        - Blogs
+      summary: Get a blog
+      operationId: getBlog
+      description: Returns a single blog by its public ID
+      parameters:
+        - $ref: '#/components/parameters/IncludeParam'
+      responses:
+        '200':
+          description: Blog retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Blog'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    patch:
+      tags:
+        - Blogs
+      summary: Update a blog
+      operationId: updateBlog
+      description: Updates an existing blog
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlogUpdateRequest'
+      responses:
+        '200':
+          description: Blog updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Blog'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    delete:
+      tags:
+        - Blogs
+      summary: Delete a blog
+      operationId: deleteBlog
+      description: Soft deletes a blog (archives it)
+      responses:
+        '204':
+          description: Blog deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ============================================
+  # Post Endpoints
+  # ============================================
+  /api/v1/posts:
+    get:
+      tags:
+        - Posts
+      summary: List all posts
+      operationId: listPosts
+      description: Returns a paginated list of posts for the current account
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - $ref: '#/components/parameters/IncludeParam'
+        - name: filter[status]
+          in: query
+          schema:
+            type: string
+            enum: [draft, published, scheduled, archived]
+          description: Filter by post status
+        - name: filter[blog_id]
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Filter by blog public ID
+      responses:
+        '200':
+          description: Posts retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Post'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - Posts
+      summary: Create a post
+      operationId: createPost
+      description: Creates a new post for a blog
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostCreateRequest'
+      responses:
+        '201':
+          description: Post created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Post'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/posts/{id}:
+    parameters:
+      - $ref: '#/components/parameters/ResourceId'
+
+    get:
+      tags:
+        - Posts
+      summary: Get a post
+      operationId: getPost
+      description: Returns a single post by its public ID
+      parameters:
+        - $ref: '#/components/parameters/IncludeParam'
+      responses:
+        '200':
+          description: Post retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Post'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    patch:
+      tags:
+        - Posts
+      summary: Update a post
+      operationId: updatePost
+      description: Updates an existing post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostUpdateRequest'
+      responses:
+        '200':
+          description: Post updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Post'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    delete:
+      tags:
+        - Posts
+      summary: Delete a post
+      operationId: deletePost
+      description: Deletes a post
+      responses:
+        '204':
+          description: Post deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/posts/{id}/publish:
+    parameters:
+      - $ref: '#/components/parameters/ResourceId'
+    post:
+      tags:
+        - Posts
+      summary: Publish a post
+      operationId: publishPost
+      description: Publishes a draft post, making it publicly visible
+      responses:
+        '200':
+          description: Post published successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Post'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/posts/{id}/unpublish:
+    parameters:
+      - $ref: '#/components/parameters/ResourceId'
+    post:
+      tags:
+        - Posts
+      summary: Unpublish a post
+      operationId: unpublishPost
+      description: Unpublishes a published post, reverting it to draft status
+      responses:
+        '200':
+          description: Post unpublished successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Post'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ============================================
+  # Draft Endpoints
+  # ============================================
+  /api/v1/drafts:
+    get:
+      tags:
+        - Drafts
+      summary: List all drafts
+      operationId: listDrafts
+      description: Returns a paginated list of drafts for the current user
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+      responses:
+        '200':
+          description: Drafts retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Draft'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - Drafts
+      summary: Create a draft
+      operationId: createDraft
+      description: Creates a new draft for a blog
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DraftCreateRequest'
+      responses:
+        '201':
+          description: Draft created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Draft'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/drafts/{id}:
+    parameters:
+      - $ref: '#/components/parameters/ResourceId'
+
+    get:
+      tags:
+        - Drafts
+      summary: Get a draft
+      operationId: getDraft
+      description: Returns a single draft by its public ID
+      responses:
+        '200':
+          description: Draft retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Draft'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    patch:
+      tags:
+        - Drafts
+      summary: Update a draft
+      operationId: updateDraft
+      description: Updates an existing draft
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DraftUpdateRequest'
+      responses:
+        '200':
+          description: Draft updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Draft'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    delete:
+      tags:
+        - Drafts
+      summary: Delete a draft
+      operationId: deleteDraft
+      description: Deletes a draft
+      responses:
+        '204':
+          description: Draft deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/drafts/{id}/autosave:
+    parameters:
+      - $ref: '#/components/parameters/ResourceId'
+    post:
+      tags:
+        - Drafts
+      summary: Autosave a draft
+      operationId: autosaveDraft
+      description: Autosaves a draft with the current content, creating a new version
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DraftUpdateRequest'
+      responses:
+        '200':
+          description: Draft autosaved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Draft'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/drafts/{id}/convert_to_post:
+    parameters:
+      - $ref: '#/components/parameters/ResourceId'
+    post:
+      tags:
+        - Drafts
+      summary: Convert draft to post
+      operationId: convertDraftToPost
+      description: Converts a draft into a published or draft post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    attributes:
+                      type: object
+                      properties:
+                        publish:
+                          type: boolean
+                          default: false
+                          description: Whether to publish immediately
+      responses:
+        '201':
+          description: Draft converted to post successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Post'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ============================================
+  # Tag Endpoints
+  # ============================================
+  /api/v1/tags:
+    get:
+      tags:
+        - Tags
+      summary: List all tags
+      operationId: listTags
+      description: Returns a paginated list of tags for the current account
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+      responses:
+        '200':
+          description: Tags retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Tag'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - Tags
+      summary: Create a tag
+      operationId: createTag
+      description: Creates a new tag for the current account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TagCreateRequest'
+      responses:
+        '201':
+          description: Tag created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Tag'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/tags/{id}:
+    parameters:
+      - $ref: '#/components/parameters/ResourceId'
+
+    get:
+      tags:
+        - Tags
+      summary: Get a tag
+      operationId: getTag
+      description: Returns a single tag by its public ID
+      responses:
+        '200':
+          description: Tag retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Tag'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    patch:
+      tags:
+        - Tags
+      summary: Update a tag
+      operationId: updateTag
+      description: Updates an existing tag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TagUpdateRequest'
+      responses:
+        '200':
+          description: Tag updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Tag'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    delete:
+      tags:
+        - Tags
+      summary: Delete a tag
+      operationId: deleteTag
+      description: Deletes a tag
+      responses:
+        '204':
+          description: Tag deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ============================================
+  # Category Endpoints
+  # ============================================
+  /api/v1/categories:
+    get:
+      tags:
+        - Categories
+      summary: List all categories
+      operationId: listCategories
+      description: Returns a paginated list of categories for the current account
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+      responses:
+        '200':
+          description: Categories retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Category'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - Categories
+      summary: Create a category
+      operationId: createCategory
+      description: Creates a new category for the current account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryCreateRequest'
+      responses:
+        '201':
+          description: Category created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Category'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/categories/{id}:
+    parameters:
+      - $ref: '#/components/parameters/ResourceId'
+
+    get:
+      tags:
+        - Categories
+      summary: Get a category
+      operationId: getCategory
+      description: Returns a single category by its public ID
+      responses:
+        '200':
+          description: Category retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Category'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    patch:
+      tags:
+        - Categories
+      summary: Update a category
+      operationId: updateCategory
+      description: Updates an existing category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryUpdateRequest'
+      responses:
+        '200':
+          description: Category updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Category'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    delete:
+      tags:
+        - Categories
+      summary: Delete a category
+      operationId: deleteCategory
+      description: Deletes a category
+      responses:
+        '204':
+          description: Category deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ============================================
+  # API Key Endpoints
+  # ============================================
+  /api/v1/api_keys:
+    get:
+      tags:
+        - API Keys
+      summary: List all API keys
+      operationId: listApiKeys
+      description: Returns a list of API keys for the current account
+      responses:
+        '200':
+          description: API keys retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ApiKey'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - API Keys
+      summary: Create an API key
+      operationId: createApiKey
+      description: Creates a new API key. The full key is only returned once upon creation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiKeyCreateRequest'
+      responses:
+        '201':
+          description: API key created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ApiKeyWithSecret'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/api_keys/{id}:
+    parameters:
+      - $ref: '#/components/parameters/ResourceId'
+
+    get:
+      tags:
+        - API Keys
+      summary: Get an API key
+      operationId: getApiKey
+      description: Returns an API key by its public ID (key value is not included)
+      responses:
+        '200':
+          description: API key retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ApiKey'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    patch:
+      tags:
+        - API Keys
+      summary: Update an API key
+      operationId: updateApiKey
+      description: Updates an API key's name or scopes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiKeyUpdateRequest'
+      responses:
+        '200':
+          description: API key updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ApiKey'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    delete:
+      tags:
+        - API Keys
+      summary: Delete an API key
+      operationId: deleteApiKey
+      description: Permanently deletes an API key
+      responses:
+        '204':
+          description: API key deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/api_keys/{id}/revoke:
+    parameters:
+      - $ref: '#/components/parameters/ResourceId'
+    post:
+      tags:
+        - API Keys
+      summary: Revoke an API key
+      operationId: revokeApiKey
+      description: Revokes an API key, making it immediately unusable
+      responses:
+        '200':
+          description: API key revoked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ApiKey'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  # ============================================
+  # Security Schemes
+  # ============================================
+  securitySchemes:
+    bearer_auth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT access token for authentication
+
+  # ============================================
+  # Common Parameters
+  # ============================================
+  parameters:
+    ResourceId:
+      name: id
+      in: path
+      required: true
+      description: Resource public ID (UUIDv7)
+      schema:
+        type: string
+        format: uuid
+        example: 0193dc7f-1234-7890-abcd-ef1234567890
+
+    PageParam:
+      name: page
+      in: query
+      required: false
+      description: Page number for pagination
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+        example: 1
+
+    PerPageParam:
+      name: per_page
+      in: query
+      required: false
+      description: Number of items per page (max 100)
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+        example: 20
+
+    IncludeParam:
+      name: include
+      in: query
+      required: false
+      description: Comma-separated list of relationships to include
+      schema:
+        type: string
+        example: posts,account
+
+  # ============================================
+  # Common Responses
+  # ============================================
+  responses:
+    Unauthorized:
+      description: Unauthorized - Invalid or missing authentication token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    ValidationError:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  # ============================================
+  # Schemas
+  # ============================================
+  schemas:
+    # ----------------------------------------
+    # Error Response
+    # ----------------------------------------
+    ErrorResponse:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              status:
+                type: string
+                example: "422"
+              code:
+                type: string
+                example: validation_error
+              title:
+                type: string
+                example: Validation Error
+              detail:
+                type: string
+                example: Name can't be blank
+              source:
+                type: object
+                properties:
+                  pointer:
+                    type: string
+                    example: /data/attributes/name
+
+    # ----------------------------------------
+    # Pagination Meta
+    # ----------------------------------------
+    PaginationMeta:
+      type: object
+      properties:
+        current_page:
+          type: integer
+          example: 1
+        total_pages:
+          type: integer
+          example: 10
+        total_count:
+          type: integer
+          example: 100
+        per_page:
+          type: integer
+          example: 20
+
+    # ----------------------------------------
+    # JSON:API Resource Identifier
+    # ----------------------------------------
+    ResourceIdentifier:
+      type: object
+      required:
+        - type
+        - id
+      properties:
+        type:
+          type: string
+        id:
+          type: string
+          format: uuid
+
+    # ----------------------------------------
+    # User
+    # ----------------------------------------
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 0193dc7f-1234-7890-abcd-ef1234567890
+        type:
+          type: string
+          example: user
+        attributes:
+          type: object
+          properties:
+            email:
+              type: string
+              format: email
+              example: user@example.com
+            name:
+              type: string
+              example: John Doe
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+
+    # ----------------------------------------
+    # Account
+    # ----------------------------------------
+    Account:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 0193dc7f-1234-7890-abcd-ef1234567890
+        type:
+          type: string
+          example: account
+        attributes:
+          type: object
+          properties:
+            name:
+              type: string
+              example: My Company
+            slug:
+              type: string
+              example: my-company
+            status:
+              type: string
+              enum: [active, inactive, suspended]
+            plan:
+              type: string
+              enum: [free, pro, enterprise]
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+
+    # ----------------------------------------
+    # Blog
+    # ----------------------------------------
+    Blog:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 0193dc7f-1234-7890-abcd-ef1234567890
+        type:
+          type: string
+          example: blog
+        attributes:
+          type: object
+          properties:
+            name:
+              type: string
+              example: My Tech Blog
+            slug:
+              type: string
+              example: my-tech-blog
+            description:
+              type: string
+              example: A blog about technology
+            status:
+              type: string
+              enum: [active, inactive, archived]
+              example: active
+            settings:
+              type: object
+              additionalProperties: true
+            post_count:
+              type: integer
+              example: 42
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+        relationships:
+          type: object
+          properties:
+            account:
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/ResourceIdentifier'
+
+    BlogCreateRequest:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - attributes
+          properties:
+            attributes:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  example: My Tech Blog
+                slug:
+                  type: string
+                  example: my-tech-blog
+                description:
+                  type: string
+                  example: A blog about technology
+                settings:
+                  type: object
+                  additionalProperties: true
+                  example:
+                    theme: dark
+                    language: en
+
+    BlogUpdateRequest:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - attributes
+          properties:
+            attributes:
+              type: object
+              properties:
+                name:
+                  type: string
+                slug:
+                  type: string
+                description:
+                  type: string
+                status:
+                  type: string
+                  enum: [active, inactive, archived]
+                settings:
+                  type: object
+                  additionalProperties: true
+
+    # ----------------------------------------
+    # Post
+    # ----------------------------------------
+    Post:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 0193dc7f-1234-7890-abcd-ef1234567890
+        type:
+          type: string
+          example: post
+        attributes:
+          type: object
+          properties:
+            title:
+              type: string
+              example: Getting Started with Rails 8
+            slug:
+              type: string
+              example: getting-started-with-rails-8
+            content:
+              type: string
+              example: "# Introduction\n\nWelcome to Rails 8..."
+            excerpt:
+              type: string
+              example: Learn how to get started with Rails 8
+            status:
+              type: string
+              enum: [draft, published, scheduled, archived]
+              example: published
+            published_at:
+              type: string
+              format: date-time
+              nullable: true
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+        relationships:
+          type: object
+          properties:
+            blog:
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/ResourceIdentifier'
+            author:
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/ResourceIdentifier'
+            tags:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ResourceIdentifier'
+
+    PostCreateRequest:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - attributes
+            - relationships
+          properties:
+            attributes:
+              type: object
+              required:
+                - title
+                - content
+              properties:
+                title:
+                  type: string
+                  example: Getting Started with Rails 8
+                slug:
+                  type: string
+                  example: getting-started-with-rails-8
+                content:
+                  type: string
+                  example: "# Introduction\n\nWelcome to Rails 8..."
+                excerpt:
+                  type: string
+                  example: Learn how to get started with Rails 8
+                status:
+                  type: string
+                  enum: [draft, published, scheduled]
+                  default: draft
+                published_at:
+                  type: string
+                  format: date-time
+                  nullable: true
+            relationships:
+              type: object
+              required:
+                - blog
+              properties:
+                blog:
+                  type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/ResourceIdentifier'
+
+    PostUpdateRequest:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - attributes
+          properties:
+            attributes:
+              type: object
+              properties:
+                title:
+                  type: string
+                slug:
+                  type: string
+                content:
+                  type: string
+                excerpt:
+                  type: string
+                status:
+                  type: string
+                  enum: [draft, published, scheduled, archived]
+                published_at:
+                  type: string
+                  format: date-time
+                  nullable: true
+
+    # ----------------------------------------
+    # Draft
+    # ----------------------------------------
+    Draft:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 0193dc7f-1234-7890-abcd-ef1234567890
+        type:
+          type: string
+          example: draft
+        attributes:
+          type: object
+          properties:
+            title:
+              type: string
+              example: Work in Progress
+            content:
+              type: string
+              example: "# Draft Content..."
+            status:
+              type: string
+              enum: [active, autosaved, archived]
+              example: active
+            version:
+              type: integer
+              example: 1
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+        relationships:
+          type: object
+          properties:
+            blog:
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/ResourceIdentifier'
+            author:
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/ResourceIdentifier'
+
+    DraftCreateRequest:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - attributes
+            - relationships
+          properties:
+            attributes:
+              type: object
+              required:
+                - title
+              properties:
+                title:
+                  type: string
+                  example: Work in Progress
+                content:
+                  type: string
+                  example: "# Draft Content..."
+            relationships:
+              type: object
+              required:
+                - blog
+              properties:
+                blog:
+                  type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/ResourceIdentifier'
+
+    DraftUpdateRequest:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - attributes
+          properties:
+            attributes:
+              type: object
+              properties:
+                title:
+                  type: string
+                content:
+                  type: string
+
+    # ----------------------------------------
+    # Tag
+    # ----------------------------------------
+    Tag:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 0193dc7f-1234-7890-abcd-ef1234567890
+        type:
+          type: string
+          example: tag
+        attributes:
+          type: object
+          properties:
+            name:
+              type: string
+              example: ruby
+            slug:
+              type: string
+              example: ruby
+            description:
+              type: string
+              example: Posts about Ruby programming
+            posts_count:
+              type: integer
+              example: 15
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+
+    TagCreateRequest:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - attributes
+          properties:
+            attributes:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  example: ruby
+                slug:
+                  type: string
+                  example: ruby
+                description:
+                  type: string
+                  example: Posts about Ruby programming
+
+    TagUpdateRequest:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - attributes
+          properties:
+            attributes:
+              type: object
+              properties:
+                name:
+                  type: string
+                slug:
+                  type: string
+                description:
+                  type: string
+
+    # ----------------------------------------
+    # Category
+    # ----------------------------------------
+    Category:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 0193dc7f-1234-7890-abcd-ef1234567890
+        type:
+          type: string
+          example: category
+        attributes:
+          type: object
+          properties:
+            name:
+              type: string
+              example: Technology
+            slug:
+              type: string
+              example: technology
+            description:
+              type: string
+              example: Technology related posts
+            position:
+              type: integer
+              example: 1
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+
+    CategoryCreateRequest:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - attributes
+          properties:
+            attributes:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  example: Technology
+                slug:
+                  type: string
+                  example: technology
+                description:
+                  type: string
+                  example: Technology related posts
+                position:
+                  type: integer
+                  example: 1
+
+    CategoryUpdateRequest:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - attributes
+          properties:
+            attributes:
+              type: object
+              properties:
+                name:
+                  type: string
+                slug:
+                  type: string
+                description:
+                  type: string
+                position:
+                  type: integer
+
+    # ----------------------------------------
+    # API Key
+    # ----------------------------------------
+    ApiKey:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 0193dc7f-1234-7890-abcd-ef1234567890
+        type:
+          type: string
+          example: api_key
+        attributes:
+          type: object
+          properties:
+            name:
+              type: string
+              example: Production API Key
+            prefix:
+              type: string
+              example: baas_
+            scopes:
+              type: array
+              items:
+                type: string
+              example: [read, write]
+            last_used_at:
+              type: string
+              format: date-time
+              nullable: true
+            expires_at:
+              type: string
+              format: date-time
+              nullable: true
+            revoked_at:
+              type: string
+              format: date-time
+              nullable: true
+            created_at:
+              type: string
+              format: date-time
+
+    ApiKeyWithSecret:
+      allOf:
+        - $ref: '#/components/schemas/ApiKey'
+        - type: object
+          properties:
+            attributes:
+              type: object
+              properties:
+                key:
+                  type: string
+                  description: Full API key (only shown once upon creation)
+                  example: baas_sk_1234567890abcdef
+
+    ApiKeyCreateRequest:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - attributes
+          properties:
+            attributes:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  example: Production API Key
+                scopes:
+                  type: array
+                  items:
+                    type: string
+                  example: [read, write]
+                  description: List of permission scopes
+                expires_at:
+                  type: string
+                  format: date-time
+                  nullable: true
+                  description: Optional expiration date
+
+    ApiKeyUpdateRequest:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - attributes
+          properties:
+            attributes:
+              type: object
+              properties:
+                name:
+                  type: string
+                scopes:
+                  type: array
+                  items:
+                    type: string
+
+    # ----------------------------------------
+    # Authentication
+    # ----------------------------------------
+    RegisterRequest:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - attributes
+          properties:
+            attributes:
+              type: object
+              required:
+                - email
+                - password
+                - password_confirmation
+                - name
+                - account_name
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  example: Password123!
+                password_confirmation:
+                  type: string
+                  format: password
+                  example: Password123!
+                name:
+                  type: string
+                  example: John Doe
+                account_name:
+                  type: string
+                  example: My Company
+
+    LoginRequest:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - attributes
+          properties:
+            attributes:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  example: Password123!
+
+    RefreshTokenRequest:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - attributes
+          properties:
+            attributes:
+              type: object
+              required:
+                - refresh_token
+              properties:
+                refresh_token:
+                  type: string
+                  example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+    AuthenticationResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            type:
+              type: string
+              example: authentication
+            attributes:
+              type: object
+              properties:
+                access_token:
+                  type: string
+                  example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                refresh_token:
+                  type: string
+                  example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                expires_in:
+                  type: integer
+                  description: Token expiry in seconds
+                  example: 900
+            relationships:
+              type: object
+              properties:
+                user:
+                  type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/ResourceIdentifier'
+                account:
+                  type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/ResourceIdentifier'
+        included:
+          type: array
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/User'
+              - $ref: '#/components/schemas/Account'
+
+    TokenResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            type:
+              type: string
+              example: token
+            attributes:
+              type: object
+              properties:
+                access_token:
+                  type: string
+                  example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                refresh_token:
+                  type: string
+                  example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                expires_in:
+                  type: integer
+                  description: Token expiry in seconds
+                  example: 900

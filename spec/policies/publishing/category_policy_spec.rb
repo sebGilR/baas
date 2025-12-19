@@ -7,7 +7,7 @@ RSpec.describe(Publishing::CategoryPolicy, type: :policy) do
   let(:category) { create(:category, account: account) }
 
   context "for an owner" do
-    subject { described_class.new(user, category, AuthorizationContext.new(user: user, account: account)) }
+    subject { described_class.new(AuthorizationContext.new(user: user, account: account), category) }
 
     let(:user) { create(:user) }
     let!(:membership) { create(:account_membership, user: user, account: account, role: :owner) }
@@ -20,7 +20,7 @@ RSpec.describe(Publishing::CategoryPolicy, type: :policy) do
   end
 
   context "for an admin" do
-    subject { described_class.new(user, category, AuthorizationContext.new(user: user, account: account)) }
+    subject { described_class.new(AuthorizationContext.new(user: user, account: account), category) }
 
     let(:user) { create(:user) }
     let!(:membership) { create(:account_membership, user: user, account: account, role: :admin) }
@@ -29,7 +29,7 @@ RSpec.describe(Publishing::CategoryPolicy, type: :policy) do
   end
 
   context "for an editor" do
-    subject { described_class.new(user, category, AuthorizationContext.new(user: user, account: account)) }
+    subject { described_class.new(AuthorizationContext.new(user: user, account: account), category) }
 
     let(:user) { create(:user) }
     let!(:membership) { create(:account_membership, user: user, account: account, role: :editor) }
@@ -42,7 +42,7 @@ RSpec.describe(Publishing::CategoryPolicy, type: :policy) do
   end
 
   context "for an author" do
-    subject { described_class.new(user, category, AuthorizationContext.new(user: user, account: account)) }
+    subject { described_class.new(AuthorizationContext.new(user: user, account: account), category) }
 
     let(:user) { create(:user) }
     let!(:membership) { create(:account_membership, user: user, account: account, role: :author) }
@@ -61,7 +61,7 @@ RSpec.describe(Publishing::CategoryPolicy, type: :policy) do
     let!(:category_in_other_account) { create(:category) }
 
     it "returns only categories in the user's account" do
-      scope = described_class::Scope.new(user, Category.all, AuthorizationContext.new(user: user, account: account))
+      scope = described_class::Scope.new(AuthorizationContext.new(user: user, account: account), Category.all)
       expect(scope.resolve).to(include(category_in_account))
       expect(scope.resolve).not_to(include(category_in_other_account))
     end

@@ -3,7 +3,7 @@
 
 set -e
 
-COMPOSE_CMD="docker compose"
+COMPOSE_CMD="docker compose --file /Users/sebastiangil/workspace/baas/compose.yml"
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -55,10 +55,10 @@ function error() {
 
 case "$1" in
   up)
-    info "Starting services..."
-    $COMPOSE_CMD up -d
+    info "Starting all services (db, redis, web, test)..."
+    $COMPOSE_CMD up -d --build db redis web test
     success "Services started! Application available at http://localhost:3000"
-    info "View logs with: bin/dev-docker logs -f"
+    info "View logs with: bin/baas logs -f"
     ;;
   
   down)
@@ -106,12 +106,14 @@ case "$1" in
   
   test)
     shift
+    info "Preparing test database..."
+    $COMPOSE_CMD exec test bin/rails db:prepare
     if [ -z "$1" ]; then
       info "Running all tests..."
-      $COMPOSE_CMD exec web bundle exec rspec
+      $COMPOSE_CMD exec test bundle exec rspec
     else
-      info "Running tests: $1"
-      $COMPOSE_CMD exec web bundle exec rspec "$@"
+      info "Running tests: $@"
+      $COMPOSE_CMD exec test bundle exec rspec "$@"
     fi
     ;;
   
