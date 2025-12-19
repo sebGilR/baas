@@ -19,6 +19,7 @@ end
 
 RSpec.describe(Paginatable, type: :controller) do
   controller(PaginatableTestController) do
+    skip_before_action :authenticate_user!
     class << self
       def controller_path
         "paginatable_test"

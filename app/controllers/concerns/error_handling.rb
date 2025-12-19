@@ -54,7 +54,7 @@ module ErrorHandling
   # Render a single error response
   # @param status [Symbol, Integer] HTTP status code
   # @param title [String] Short error title (optional, derived from status if not provided)
-  # @param detail [String] Detailed error message
+  # @param detail [Array<String>] Detailed error messages
   # @param code [String, nil] Machine-readable error code
   # @param source [Hash, nil] Pointer to error source
   def render_error(status, title: nil, detail:, code: nil, source: nil)
@@ -65,7 +65,7 @@ module ErrorHandling
       status: status_code.to_s,
       code: code,
       title: title,
-      detail: detail,
+      detail: detail, # Always array for JSON:API schema
       source: source,
     }.compact
 
@@ -102,7 +102,7 @@ module ErrorHandling
     render_error(
       status,
       title: title,
-      detail: format_errors(result.errors),
+      detail: result.errors.is_a?(Array) ? result.errors.join(', ') : result.errors.to_s,
       code: result.code,
     )
   end
@@ -134,19 +134,19 @@ module ErrorHandling
 
   # Format errors for display
   # @param errors [String, Array, Hash, ActiveModel::Errors] Error data
-  # @return [String]
+  # @return [Array<String>]
   def format_errors(errors)
     case errors
     when String
-      errors
+      [errors]
     when Array
-      errors.join(", ")
+      errors.map(&:to_s)
     when Hash
-      errors.values.flatten.join(", ")
+      errors.values.flatten.map(&:to_s)
     when ActiveModel::Errors
-      errors.full_messages.join(", ")
+      errors.full_messages
     else
-      errors.to_s
+      [errors.to_s]
     end
   end
 end

@@ -13,6 +13,10 @@ gem "rails", "~> 8.1.1"
 gem "jsonapi-serializer", "~> 2.2"
 gem "pundit", "~> 2.3"
 
+# API Documentation
+gem "rswag-api", "~> 2.16"
+gem "rswag-ui", "~> 2.16"
+
 # Multi-Tenancy
 gem "acts_as_tenant", "~> 1.0"
 

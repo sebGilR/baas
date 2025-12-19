@@ -30,6 +30,7 @@ end
 
 RSpec.describe(Sortable, type: :controller) do
   controller(SortableTestController) do
+    skip_before_action :authenticate_user!
     class << self
       def controller_path
         "sortable_test"

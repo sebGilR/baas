@@ -26,6 +26,7 @@ end
 
 RSpec.describe(Filterable, type: :controller) do
   controller(FilterableTestController) do
+    skip_before_action :authenticate_user!
     class << self
       def controller_path
         "filterable_test"

@@ -44,6 +44,7 @@ end
 
 RSpec.describe(ErrorHandling, type: :controller) do
   controller(ErrorsTestController) do
+    skip_before_action :authenticate_user!
     # Define routes for the dummy controller actions
     class << self
       def controller_path
