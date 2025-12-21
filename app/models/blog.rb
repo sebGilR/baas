@@ -21,7 +21,7 @@ class Blog < ApplicationRecord
 
   # Scopes
   scope :active, -> { where(status: :active) }
-  scope :ordered, -> { order(created_at: :desc) }
+  scope :ordered, -> { order(created_at: :desc, id: :desc) }
 
   # Callbacks
   before_validation :generate_slug, on: :create

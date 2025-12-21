@@ -27,12 +27,12 @@ class Draft < ApplicationRecord
     update!(
       content: content,
       title: title || self.title,
-      autosaved_at: Time.current
+      autosaved_at: Time.current,
     )
   end
 
   def convert_to_post!
-    return nil if title.blank? || content.blank?
+    return if title.blank? || content.blank?
 
     new_post = nil
     ActiveRecord::Base.transaction do
@@ -43,7 +43,7 @@ class Draft < ApplicationRecord
         title: title,
         content: content,
         status: :draft,
-        metadata: metadata
+        metadata:,
       )
 
       # Copy tags to the new post

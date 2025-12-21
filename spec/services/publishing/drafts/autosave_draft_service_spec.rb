@@ -22,6 +22,7 @@ RSpec.describe(Publishing::Drafts::AutosaveDraftService) do
 
       it "updates autosaved_at" do
         original_autosaved_at = draft.autosaved_at
+        sleep 1
         service.call
         draft.reload
         expect(draft.autosaved_at).to(be > original_autosaved_at)
