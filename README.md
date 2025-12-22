@@ -90,6 +90,7 @@ See [ARCHITECTURE.md](../project_docs/baas/ARCHITECTURE.md) for detailed documen
 - **Post** - Published blog posts
 - **Draft** - Work-in-progress content
 - **Tag** - Content categorization
+- **Rich content fields**: posts, drafts, and revisions store both legacy `content` plus `content_json` (structured editor payload), `content_html` (rendered), and `content_text` (plain text) so editors like Tiptap can round-trip their internal format while the API serves pre-rendered/text-only variants.
 
 See [DATABASE_SCHEMA_HYBRID.md](../project_docs/baas/DATABASE_SCHEMA_HYBRID.md) for complete schema.
 
