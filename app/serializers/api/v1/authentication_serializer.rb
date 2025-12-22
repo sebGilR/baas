@@ -11,7 +11,7 @@ module Api
     #     account: account,
     #     access_token: "jwt_token",
     #     refresh_token: "refresh_token",
-    #     expires_in: 1800
+    #     expires_in: 86400
     #   ).serializable_hash
     #
     # @example Using class method

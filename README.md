@@ -95,7 +95,7 @@ See [DATABASE_SCHEMA_HYBRID.md](../project_docs/baas/DATABASE_SCHEMA_HYBRID.md) 
 
 ## 🔐 Authentication & Authorization
 
-- **JWT access tokens** (15-minute expiry)
+- **JWT access tokens** (24-hour expiry)
 - **Refresh tokens** (30-day expiry with rotation)
 - **Device-based token storage**
 - **Pundit policies** for resource-level authorization

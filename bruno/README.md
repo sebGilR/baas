@@ -70,7 +70,7 @@ The typical authentication flow is:
 | Variable | Description | Set By |
 |----------|-------------|--------|
 | `base_url` | API base URL | Manual (in environment) |
-| `access_token` | JWT access token (30 min expiry) | Auto (after login/register) |
+| `access_token` | JWT access token (24 hour expiry) | Auto (after login/register) |
 | `refresh_token` | Refresh token (30 day expiry) | Auto (after login/register) |
 
 ## 🧪 Running Tests

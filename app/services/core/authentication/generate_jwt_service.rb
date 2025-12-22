@@ -2,6 +2,9 @@
 
 module Core
   module Authentication
+    ACCESS_TOKEN_TTL = 24.hours
+    ACCESS_TOKEN_EXPIRES_IN = ACCESS_TOKEN_TTL.to_i
+
     class GenerateJwtService < ApplicationService
       def initialize(user:, account:)
         @user = user
@@ -23,7 +26,7 @@ module Core
           account_id: account.public_id,
           email: user.email,
           role: user.role_for_account(account),
-          exp: 30.minutes.from_now.to_i,
+          exp: ACCESS_TOKEN_TTL.from_now.to_i,
           iat: Time.current.to_i,
         }
 

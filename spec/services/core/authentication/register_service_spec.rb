@@ -34,7 +34,7 @@ RSpec.describe(Core::Authentication::RegisterService) do
         expect(result.data.account).to(be_a(Account))
         expect(result.data.access_token).to(be_a(String))
         expect(result.data.refresh_token).to(be_a(String))
-        expect(result.data.expires_in).to(eq(1800))
+        expect(result.data.expires_in).to(eq(Core::Authentication::ACCESS_TOKEN_EXPIRES_IN))
       end
 
       it "assigns the correct attributes to the new records" do

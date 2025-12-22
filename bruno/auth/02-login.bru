@@ -60,8 +60,8 @@ tests {
     expect(res.getBody().data.attributes.token_type).to.equal('Bearer');
   });
   
-  test("Expires in 1800 seconds (30 min)", function() {
-    expect(res.getBody().data.attributes.expires_in).to.equal(1800);
+  test("Expires in 86400 seconds (24 hours)", function() {
+    expect(res.getBody().data.attributes.expires_in).to.equal(86400);
   });
 }
 

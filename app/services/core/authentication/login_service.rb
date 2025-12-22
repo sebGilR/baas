@@ -24,7 +24,7 @@ module Core
           account: account,
           access_token: tokens[:access_token],
           refresh_token: tokens[:refresh_token],
-          expires_in: 1800,
+          expires_in: Core::Authentication::ACCESS_TOKEN_EXPIRES_IN,
         )
       end
 
