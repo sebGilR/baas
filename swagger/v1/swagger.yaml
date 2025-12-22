@@ -236,6 +236,17 @@ paths:
       parameters:
         - $ref: '#/components/parameters/PageParam'
         - $ref: '#/components/parameters/PerPageParam'
+        - name: roots
+          in: query
+          schema:
+            type: boolean
+          description: When true, returns only root categories
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [popular]
+          description: Sort tags by popularity when set to `popular`
         - $ref: '#/components/parameters/IncludeParam'
       responses:
         '200':
@@ -365,18 +376,29 @@ paths:
         - $ref: '#/components/parameters/PageParam'
         - $ref: '#/components/parameters/PerPageParam'
         - $ref: '#/components/parameters/IncludeParam'
-        - name: filter[status]
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [popular]
+          description: Sort tags by popularity when set to `popular`
+        - name: status
           in: query
           schema:
             type: string
             enum: [draft, published, scheduled, archived]
           description: Filter by post status
-        - name: filter[blog_id]
+        - name: blog_id
           in: query
           schema:
             type: string
             format: uuid
           description: Filter by blog public ID
+        - name: featured
+          in: query
+          schema:
+            type: boolean
+          description: Return only featured posts when true
       responses:
         '200':
           description: Posts retrieved successfully
@@ -554,6 +576,23 @@ paths:
       parameters:
         - $ref: '#/components/parameters/PageParam'
         - $ref: '#/components/parameters/PerPageParam'
+        - $ref: '#/components/parameters/IncludeParam'
+        - name: roots
+          in: query
+          schema:
+            type: boolean
+          description: When true, returns only root categories
+        - name: blog_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Filter drafts by blog public ID
+        - name: mine
+          in: query
+          schema:
+            type: boolean
+          description: When true, limits results to drafts authored by the current user
       responses:
         '200':
           description: Drafts retrieved successfully
@@ -608,6 +647,8 @@ paths:
       summary: Get a draft
       operationId: getDraft
       description: Returns a single draft by its public ID
+      parameters:
+        - $ref: '#/components/parameters/IncludeParam'
       responses:
         '200':
           description: Draft retrieved successfully
@@ -751,6 +792,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/PageParam'
         - $ref: '#/components/parameters/PerPageParam'
+        - $ref: '#/components/parameters/IncludeParam'
       responses:
         '200':
           description: Tags retrieved successfully
@@ -805,6 +847,8 @@ paths:
       summary: Get a tag
       operationId: getTag
       description: Returns a single tag by its public ID
+      parameters:
+        - $ref: '#/components/parameters/IncludeParam'
       responses:
         '200':
           description: Tag retrieved successfully
@@ -876,6 +920,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/PageParam'
         - $ref: '#/components/parameters/PerPageParam'
+        - $ref: '#/components/parameters/IncludeParam'
       responses:
         '200':
           description: Categories retrieved successfully
@@ -930,6 +975,8 @@ paths:
       summary: Get a category
       operationId: getCategory
       description: Returns a single category by its public ID
+      parameters:
+        - $ref: '#/components/parameters/IncludeParam'
       responses:
         '200':
           description: Category retrieved successfully
@@ -998,6 +1045,13 @@ paths:
       summary: List all API keys
       operationId: listApiKeys
       description: Returns a list of API keys for the current account
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, revoked]
+          description: Filter API keys by status
       responses:
         '200':
           description: API keys retrieved successfully
@@ -1018,7 +1072,7 @@ paths:
         - API Keys
       summary: Create an API key
       operationId: createApiKey
-      description: Creates a new API key. The full key is only returned once upon creation.
+      description: Creates a new API key. The full token is returned once in the response body and will not be shown again.
       requestBody:
         required: true
         content:
@@ -1035,6 +1089,12 @@ paths:
                 properties:
                   data:
                     $ref: '#/components/schemas/ApiKeyWithSecret'
+                  meta:
+                    type: object
+                    properties:
+                      warning:
+                        type: string
+                        example: Store this token securely. It will not be shown again.
         '422':
           $ref: '#/components/responses/ValidationError'
         '401':
@@ -1070,7 +1130,7 @@ paths:
         - API Keys
       summary: Update an API key
       operationId: updateApiKey
-      description: Updates an API key's name or scopes
+      description: Updates the human-readable name of an API key
       requestBody:
         required: true
         content:
@@ -1099,7 +1159,7 @@ paths:
         - API Keys
       summary: Delete an API key
       operationId: deleteApiKey
-      description: Permanently deletes an API key
+      description: Revokes an API key so it can no longer be used
       responses:
         '204':
           description: API key deleted successfully
@@ -1374,7 +1434,7 @@ components:
               example: A blog about technology
             status:
               type: string
-              enum: [active, inactive, archived]
+              enum: [active, archived, deleted]
               example: active
             settings:
               type: object
@@ -1449,7 +1509,7 @@ components:
                   type: string
                 status:
                   type: string
-                  enum: [active, inactive, archived]
+                  enum: [active, archived, deleted]
                 settings:
                   type: object
                   additionalProperties: true
@@ -1486,10 +1546,31 @@ components:
               type: string
               enum: [draft, published, scheduled, archived]
               example: published
+            featured:
+              type: boolean
+              example: true
+            scheduled_for:
+              type: string
+              format: date-time
+              nullable: true
             published_at:
               type: string
               format: date-time
               nullable: true
+            seo_title:
+              type: string
+              example: Rails 8 for Beginners
+            seo_description:
+              type: string
+              example: Everything you need to know about Rails 8
+            reading_time_minutes:
+              type: integer
+              example: 4
+            metadata:
+              type: object
+              additionalProperties: true
+              example:
+                canonical_url: https://blog.example.com/posts/rails-8
             created_at:
               type: string
               format: date-time
@@ -1509,7 +1590,19 @@ components:
               properties:
                 data:
                   $ref: '#/components/schemas/ResourceIdentifier'
+            category:
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/ResourceIdentifier'
             tags:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ResourceIdentifier'
+            revisions:
               type: object
               properties:
                 data:
@@ -1526,7 +1619,6 @@ components:
           type: object
           required:
             - attributes
-            - relationships
           properties:
             attributes:
               type: object
@@ -1550,16 +1642,35 @@ components:
                   type: string
                   enum: [draft, published, scheduled]
                   default: draft
+                featured:
+                  type: boolean
+                  default: false
+                blog_id:
+                  type: string
+                  format: uuid
+                  description: Blog public ID the post belongs to (required when changing blogs without providing `relationships.blog`)
+                  description: Blog public ID the post belongs to (required when `relationships.blog` is omitted)
+                category_id:
+                  type: string
+                  format: uuid
+                  nullable: true
+                tag_ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                metadata:
+                  type: object
+                  additionalProperties: true
+                  description: Arbitrary key/value metadata for the post
                 published_at:
                   type: string
                   format: date-time
                   nullable: true
             relationships:
               type: object
-              required:
-                - blog
               properties:
-                blog:
+                parent:
                   type: object
                   properties:
                     data:
@@ -1589,10 +1700,31 @@ components:
                 status:
                   type: string
                   enum: [draft, published, scheduled, archived]
+                featured:
+                  type: boolean
+                blog_id:
+                  type: string
+                  format: uuid
+                category_id:
+                  type: string
+                  format: uuid
+                  nullable: true
+                tag_ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
                 published_at:
                   type: string
                   format: date-time
                   nullable: true
+                metadata:
+                  type: object
+                  additionalProperties: true
+                seo_title:
+                  type: string
+                seo_description:
+                  type: string
 
     # ----------------------------------------
     # Draft
@@ -1616,13 +1748,19 @@ components:
             content:
               type: string
               example: "# Draft Content..."
-            status:
+            autosaved_at:
               type: string
-              enum: [active, autosaved, archived]
-              example: active
-            version:
+              format: date-time
+              nullable: true
+            metadata:
+              type: object
+              additionalProperties: true
+            word_count:
               type: integer
-              example: 1
+              example: 428
+            last_saved:
+              type: string
+              format: date-time
             created_at:
               type: string
               format: date-time
@@ -1642,6 +1780,18 @@ components:
               properties:
                 data:
                   $ref: '#/components/schemas/ResourceIdentifier'
+            post:
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/ResourceIdentifier'
+            tags:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ResourceIdentifier'
 
     DraftCreateRequest:
       type: object
@@ -1652,7 +1802,6 @@ components:
           type: object
           required:
             - attributes
-            - relationships
           properties:
             attributes:
               type: object
@@ -1665,10 +1814,20 @@ components:
                 content:
                   type: string
                   example: "# Draft Content..."
+                blog_id:
+                  type: string
+                  format: uuid
+                  description: Blog public ID the draft belongs to (required when `relationships.blog` is omitted)
+                post_id:
+                  type: string
+                  format: uuid
+                  nullable: true
+                  description: Attach the draft to an existing post for editing
+                metadata:
+                  type: object
+                  additionalProperties: true
             relationships:
               type: object
-              required:
-                - blog
               properties:
                 blog:
                   type: object
@@ -1693,6 +1852,9 @@ components:
                   type: string
                 content:
                   type: string
+                metadata:
+                  type: object
+                  additionalProperties: true
 
     # ----------------------------------------
     # Tag
@@ -1716,12 +1878,15 @@ components:
             slug:
               type: string
               example: ruby
-            description:
+            color:
               type: string
-              example: Posts about Ruby programming
-            posts_count:
+              example: "#CC0000"
+            post_count:
               type: integer
               example: 15
+            usage_count:
+              type: integer
+              example: 25
             created_at:
               type: string
               format: date-time
@@ -1750,9 +1915,9 @@ components:
                 slug:
                   type: string
                   example: ruby
-                description:
+                color:
                   type: string
-                  example: Posts about Ruby programming
+                  example: "#CC0000"
 
     TagUpdateRequest:
       type: object
@@ -1771,7 +1936,7 @@ components:
                   type: string
                 slug:
                   type: string
-                description:
+                color:
                   type: string
 
     # ----------------------------------------
@@ -1802,12 +1967,42 @@ components:
             position:
               type: integer
               example: 1
+            depth:
+              type: integer
+              example: 0
+            full_path:
+              type: string
+              example: "technology/mobile"
+            post_count:
+              type: integer
+              example: 12
+            is_root:
+              type: boolean
+              example: true
+            is_leaf:
+              type: boolean
+              example: false
             created_at:
               type: string
               format: date-time
             updated_at:
               type: string
               format: date-time
+        relationships:
+          type: object
+          properties:
+            parent:
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/ResourceIdentifier'
+            children:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ResourceIdentifier'
 
     CategoryCreateRequest:
       type: object
@@ -1836,6 +2031,14 @@ components:
                 position:
                   type: integer
                   example: 1
+            relationships:
+              type: object
+              properties:
+                blog:
+                  type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/ResourceIdentifier'
 
     CategoryUpdateRequest:
       type: object
@@ -1858,6 +2061,14 @@ components:
                   type: string
                 position:
                   type: integer
+            relationships:
+              type: object
+              properties:
+                parent:
+                  type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/ResourceIdentifier'
 
     # ----------------------------------------
     # API Key
@@ -1881,20 +2092,30 @@ components:
             prefix:
               type: string
               example: baas_
+            environment:
+              type: string
+              enum: [live, test]
+              example: live
             scopes:
               type: array
               items:
                 type: string
               example: [read, write]
+            status:
+              type: string
+              enum: [active, expired, revoked]
+              example: active
+            masked_prefix:
+              type: string
+              example: ak_live_abcd****
+            is_active:
+              type: boolean
+              example: true
             last_used_at:
               type: string
               format: date-time
               nullable: true
             expires_at:
-              type: string
-              format: date-time
-              nullable: true
-            revoked_at:
               type: string
               format: date-time
               nullable: true
@@ -1910,7 +2131,7 @@ components:
             attributes:
               type: object
               properties:
-                key:
+                token:
                   type: string
                   description: Full API key (only shown once upon creation)
                   example: baas_sk_1234567890abcdef
@@ -1939,11 +2160,15 @@ components:
                     type: string
                   example: [read, write]
                   description: List of permission scopes
-                expires_at:
+                environment:
                   type: string
-                  format: date-time
+                  enum: [live, test]
+                  default: live
+                expires_in_days:
+                  type: integer
+                  minimum: 1
                   nullable: true
-                  description: Optional expiration date
+                  description: "Optional expiration offset (e.g., 30 for 30 days)"
 
     ApiKeyUpdateRequest:
       type: object
@@ -1960,10 +2185,6 @@ components:
               properties:
                 name:
                   type: string
-                scopes:
-                  type: array
-                  items:
-                    type: string
 
     # ----------------------------------------
     # Authentication

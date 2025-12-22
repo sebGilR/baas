@@ -22,8 +22,6 @@ Rails.application.routes.draw do
       end
 
       # Core resources
-      resources :accounts, only: [:index, :show, :create, :update]
-      resources :users, only: [:index, :show, :update]
       resources :api_keys, only: [:index, :show, :create, :update, :destroy] do
         member do
           post :revoke
@@ -47,11 +45,6 @@ Rails.application.routes.draw do
       resources :tags
       resources :categories
 
-      # Analytics resources
-      namespace :analytics do
-        get "dashboard", to: "dashboard#show"
-        resources :reports, only: [:index, :show]
-      end
     end
   end
 end
