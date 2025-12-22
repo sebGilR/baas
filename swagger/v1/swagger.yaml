@@ -1539,6 +1539,19 @@ components:
             content:
               type: string
               example: "# Introduction\n\nWelcome to Rails 8..."
+            content_json:
+              type: object
+              additionalProperties: true
+              nullable: true
+              description: Structured editor output (e.g., Tiptap JSON)
+            content_html:
+              type: string
+              nullable: true
+              description: Rendered HTML artifact of the post
+            content_text:
+              type: string
+              nullable: true
+              description: Plain text version for search/embeddings
             excerpt:
               type: string
               example: Learn how to get started with Rails 8
@@ -1624,7 +1637,6 @@ components:
               type: object
               required:
                 - title
-                - content
               properties:
                 title:
                   type: string
@@ -1634,7 +1646,21 @@ components:
                   example: getting-started-with-rails-8
                 content:
                   type: string
+                  description: Legacy plaintext/HTML content body. Provide at least one of `content`, `content_html`, `content_text`, or `content_json`.
                   example: "# Introduction\n\nWelcome to Rails 8..."
+                content_json:
+                  type: object
+                  additionalProperties: true
+                  nullable: true
+                  description: Structured editor payload (e.g., Tiptap JSON). Preferred source of truth.
+                content_html:
+                  type: string
+                  nullable: true
+                  description: Pre-rendered HTML for public pages.
+                content_text:
+                  type: string
+                  nullable: true
+                  description: Plain text representation for indexing/embeddings.
                 excerpt:
                   type: string
                   example: Learn how to get started with Rails 8
@@ -1695,6 +1721,20 @@ components:
                   type: string
                 content:
                   type: string
+                  description: Legacy plaintext/HTML body input.
+                content_json:
+                  type: object
+                  additionalProperties: true
+                  nullable: true
+                  description: Structured editor payload (preferred).
+                content_html:
+                  type: string
+                  nullable: true
+                  description: Pre-rendered HTML artifact.
+                content_text:
+                  type: string
+                  nullable: true
+                  description: Plain text representation for indexing/embeddings.
                 excerpt:
                   type: string
                 status:
@@ -1748,6 +1788,19 @@ components:
             content:
               type: string
               example: "# Draft Content..."
+            content_json:
+              type: object
+              additionalProperties: true
+              nullable: true
+              description: Structured editor payload (preferred)
+            content_html:
+              type: string
+              nullable: true
+              description: Pre-rendered HTML artifact
+            content_text:
+              type: string
+              nullable: true
+              description: Plain text representation for indexing/embeddings
             autosaved_at:
               type: string
               format: date-time
@@ -1813,7 +1866,21 @@ components:
                   example: Work in Progress
                 content:
                   type: string
+                  description: Legacy plaintext/HTML content body. Provide at least one of the content fields.
                   example: "# Draft Content..."
+                content_json:
+                  type: object
+                  additionalProperties: true
+                  nullable: true
+                  description: Structured editor payload (preferred).
+                content_html:
+                  type: string
+                  nullable: true
+                  description: Pre-rendered HTML artifact.
+                content_text:
+                  type: string
+                  nullable: true
+                  description: Plain text representation for indexing/embeddings.
                 blog_id:
                   type: string
                   format: uuid
@@ -1852,6 +1919,17 @@ components:
                   type: string
                 content:
                   type: string
+                  description: Legacy plaintext/HTML body field.
+                content_json:
+                  type: object
+                  additionalProperties: true
+                  nullable: true
+                content_html:
+                  type: string
+                  nullable: true
+                content_text:
+                  type: string
+                  nullable: true
                 metadata:
                   type: object
                   additionalProperties: true

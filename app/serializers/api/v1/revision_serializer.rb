@@ -8,7 +8,8 @@ module Api
       set_id :public_id
       set_type :revision
 
-      attributes :title, :content, :revision_number, :created_at
+      attributes :title, :content, :content_json, :content_html, :content_text,
+                 :revision_number, :created_at
 
       attribute :metadata do |revision|
         revision.metadata || {}

@@ -25,7 +25,7 @@ module Publishing
       attr_reader :draft, :user, :attributes
 
       def permitted_attributes
-        attributes.slice(:title, :content, :metadata)
+        attributes.slice(:title, :content, :content_json, :content_html, :content_text, :metadata).compact
       end
     end
   end

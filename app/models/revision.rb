@@ -5,6 +5,9 @@ class Revision < ApplicationRecord
 
   acts_as_tenant :account
 
+  # Callbacks
+  before_validation :sync_legacy_content
+
   # Associations
   belongs_to :account
   belongs_to :post
@@ -41,8 +44,29 @@ class Revision < ApplicationRecord
   end
 
   def word_count
-    return 0 if content.blank?
+    plain_text = rich_content_text
+    return 0 if plain_text.blank?
 
-    content.gsub(/<[^>]*>/, "").split.size
+    plain_text.split.size
+  end
+
+  private
+
+  def rich_content_text
+    return content_text if content_text.present?
+    return strip_html_content(content_html) if content_html.present?
+    return strip_html_content(content) if content.present?
+
+    ""
+  end
+
+  def strip_html_content(source)
+    source.to_s.gsub(/<[^>]*>/, "").strip
+  end
+
+  def sync_legacy_content
+    return if content.present?
+
+    self.content = content_html.presence || content_text
   end
 end

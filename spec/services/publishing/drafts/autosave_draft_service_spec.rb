@@ -9,7 +9,8 @@ RSpec.describe(Publishing::Drafts::AutosaveDraftService) do
   let(:draft) { create(:draft, account: account, blog: blog, author: author) }
   let(:content) { "Updated content" }
   let(:title) { "Updated title" }
-  let(:service) { described_class.new(draft: draft, user: author, content: content, title: title) }
+  let(:attributes) { { content: content, title: title } }
+  let(:service) { described_class.new(draft: draft, user: author, attributes: attributes) }
 
   describe "#call" do
     context "with valid parameters" do
@@ -18,6 +19,19 @@ RSpec.describe(Publishing::Drafts::AutosaveDraftService) do
         expect(result).to(be_success)
         expect(result.draft.content).to(eq("Updated content"))
         expect(result.draft.title).to(eq("Updated title"))
+      end
+
+      context "with only structured content" do
+        let(:content_json) { { "type" => "doc", "content" => [] } }
+        let(:attributes) { { content_json: content_json } }
+
+        it "updates content_json without touching the legacy content field" do
+          original_content = draft.content
+          result = service.call
+          expect(result).to(be_success)
+          expect(result.draft.content_json).to(eq(content_json))
+          expect(result.draft.content).to(eq(original_content))
+        end
       end
 
       it "updates autosaved_at" do
@@ -30,7 +44,7 @@ RSpec.describe(Publishing::Drafts::AutosaveDraftService) do
     end
 
     context "with only content" do
-      let(:service) { described_class.new(draft: draft, user: author, content: content) }
+      let(:attributes) { { content: content } }
 
       it "preserves the original title" do
         original_title = draft.title
@@ -51,7 +65,7 @@ RSpec.describe(Publishing::Drafts::AutosaveDraftService) do
       end
 
       context "when user is nil" do
-        let(:service) { described_class.new(draft: draft, user: nil, content: content) }
+        let(:service) { described_class.new(draft: draft, user: nil, attributes: attributes) }
 
         it "returns a failure result" do
           result = service.call
@@ -60,8 +74,8 @@ RSpec.describe(Publishing::Drafts::AutosaveDraftService) do
         end
       end
 
-      context "when content is nil" do
-        let(:content) { nil }
+      context "when no content attributes are provided" do
+        let(:attributes) { { title: "Only title" } }
 
         it "returns a failure result" do
           result = service.call

@@ -8,7 +8,8 @@ module Api
       set_id :public_id
       set_type :post
 
-      attributes :title, :slug, :content, :excerpt, :status,
+      attributes :title, :slug, :content, :content_json, :content_html,
+                 :content_text, :excerpt, :status,
                  :published_at, :scheduled_for, :featured,
                  :seo_title, :seo_description, :reading_time_minutes,
                  :created_at, :updated_at

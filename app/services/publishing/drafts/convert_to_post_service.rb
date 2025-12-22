@@ -12,7 +12,7 @@ module Publishing
         return failure(errors: "Draft is required", code: Codes::VALIDATION_FAILED) unless draft
         return failure(errors: "User is required", code: Codes::VALIDATION_FAILED) unless user
         return failure(errors: "Draft must have a title", code: Codes::VALIDATION_FAILED) if draft.title.blank?
-        return failure(errors: "Draft must have content", code: Codes::VALIDATION_FAILED) if draft.content.blank?
+        return failure(errors: "Draft must have content", code: Codes::VALIDATION_FAILED) unless draft.rich_content_present?
 
         post = draft.convert_to_post!
 

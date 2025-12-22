@@ -291,7 +291,10 @@ CREATE TABLE public.drafts (
     autosaved_at timestamp(6) without time zone,
     metadata jsonb DEFAULT '{}'::jsonb,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    content_json jsonb,
+    content_html text,
+    content_text text
 );
 
 
@@ -338,7 +341,10 @@ CREATE TABLE public.posts (
     metadata jsonb DEFAULT '{}'::jsonb,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    category_id bigint
+    category_id bigint,
+    content_json jsonb,
+    content_html text,
+    content_text text
 );
 
 
@@ -414,7 +420,10 @@ CREATE TABLE public.revisions (
     revision_number integer NOT NULL,
     metadata jsonb DEFAULT '{}'::jsonb,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    content_json jsonb,
+    content_html text,
+    content_text text
 );
 
 
@@ -1342,6 +1351,7 @@ ALTER TABLE ONLY public.posts
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20251221231924'),
 ('20251206173009'),
 ('20251130203859'),
 ('20251130203228'),

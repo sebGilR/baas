@@ -22,17 +22,22 @@ class Draft < ApplicationRecord
   scope :by_author, ->(author_id) { where(author_id: author_id) }
   scope :by_blog, ->(blog_id) { where(blog_id: blog_id) }
 
+  # Callbacks
+  before_validation :sync_legacy_content
+
   # Instance Methods
-  def autosave!(content:, title: nil)
-    update!(
-      content: content,
-      title: title || self.title,
-      autosaved_at: Time.current,
-    )
+  def autosave!(title: nil, content: nil, content_json: nil, content_html: nil, content_text: nil)
+    self.title = title || self.title
+    self.content = content unless content.nil?
+    self.content_json = content_json unless content_json.nil?
+    self.content_html = content_html unless content_html.nil?
+    self.content_text = content_text unless content_text.nil?
+    self.autosaved_at = Time.current
+    save!
   end
 
   def convert_to_post!
-    return if title.blank? || content.blank?
+    return if title.blank? || !rich_content_present?
 
     new_post = nil
     ActiveRecord::Base.transaction do
@@ -41,7 +46,10 @@ class Draft < ApplicationRecord
         blog: blog,
         author: author,
         title: title,
-        content: content,
+        content: legacy_content_value,
+        content_json: content_json,
+        content_html: content_html,
+        content_text: content_text,
         status: :draft,
         metadata:,
       )
@@ -59,12 +67,41 @@ class Draft < ApplicationRecord
   end
 
   def word_count
-    return 0 if content.blank?
+    plain_text = rich_content_text
+    return 0 if plain_text.blank?
 
-    content.gsub(/<[^>]*>/, "").split.size
+    plain_text.split.size
   end
 
   def last_saved
     autosaved_at || updated_at
+  end
+
+  def rich_content_present?
+    content.present? || content_json.present? || content_html.present? || content_text.present?
+  end
+
+  private
+
+  def rich_content_text
+    return content_text if content_text.present?
+    return strip_html_content(content_html) if content_html.present?
+    return strip_html_content(content) if content.present?
+
+    ""
+  end
+
+  def strip_html_content(source)
+    source.to_s.gsub(/<[^>]*>/, "").strip
+  end
+
+  def legacy_content_value
+    content.presence || content_html.presence || content_text
+  end
+
+  def sync_legacy_content
+    return if content.present?
+
+    self.content = content_html.presence || content_text
   end
 end

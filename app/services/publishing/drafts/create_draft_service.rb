@@ -31,6 +31,9 @@ module Publishing
           author: user,
           title: attributes[:title],
           content: attributes[:content],
+          content_json: attributes[:content_json],
+          content_html: attributes[:content_html],
+          content_text: attributes[:content_text],
           post_id: attributes[:post_id],
           metadata: attributes[:metadata] || {},
           autosaved_at: Time.current

@@ -36,13 +36,14 @@ module Publishing
 
       def permitted_attributes
         attributes.slice(
-          :title, :slug, :content, :excerpt, :status,
+          :title, :slug, :content, :content_json, :content_html, :content_text,
+          :excerpt, :status,
           :seo_title, :seo_description, :featured, :category_id, :metadata
-        )
+        ).compact
       end
 
       def create_revision_if_content_changed
-        return unless attributes[:content].present? && attributes[:content] != post.content
+        return unless content_attributes_changed?
 
         post.create_revision!(user)
       end
@@ -58,6 +59,14 @@ module Publishing
         tags = Tag.where(account: post.account, public_id: tag_ids)
         tags.each do |tag|
           post.taggings.create!(account: post.account, tag: tag)
+        end
+      end
+
+      def content_attributes_changed?
+        [:content, :content_json, :content_html, :content_text].any? do |attribute|
+          next unless attributes.key?(attribute)
+
+          attributes[attribute] != post.public_send(attribute)
         end
       end
     end

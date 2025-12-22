@@ -85,8 +85,7 @@ module Api
         result = Publishing::Drafts::AutosaveDraftService.call(
           draft: @draft,
           user: current_user,
-          content: autosave_params[:content],
-          title: autosave_params[:title],
+          attributes: autosave_params.to_h,
         )
 
         if result.success?
@@ -128,14 +127,23 @@ module Api
         params.require(:data).require(:attributes).permit(
           :title,
           :content,
+          :content_html,
+          :content_text,
           :blog_id,
           :post_id,
+          content_json: {},
           metadata: {},
         )
       end
 
       def autosave_params
-        params.require(:data).require(:attributes).permit(:title, :content)
+        params.require(:data).require(:attributes).permit(
+          :title,
+          :content,
+          :content_html,
+          :content_text,
+          content_json: {},
+        )
       end
     end
   end

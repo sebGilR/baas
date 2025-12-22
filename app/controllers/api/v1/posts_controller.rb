@@ -128,6 +128,8 @@ module Api
           :title,
           :slug,
           :content,
+          :content_html,
+          :content_text,
           :excerpt,
           :status,
           :seo_title,
@@ -136,6 +138,7 @@ module Api
           :blog_id,
           :category_id,
           tag_ids: [],
+          content_json: {},
           metadata: {},
         )
       end
