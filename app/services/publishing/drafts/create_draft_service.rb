@@ -16,6 +16,7 @@ module Publishing
         return failure(errors: "User is required", code: Codes::VALIDATION_FAILED) unless user
 
         draft = build_draft
+        RichContent::ArtifactPipeline.apply(draft, pipeline_sources)
         return failure(errors: draft.errors.full_messages, code: Codes::VALIDATION_FAILED) unless draft.save
 
         success(draft: draft)
@@ -36,8 +37,17 @@ module Publishing
           content_text: attributes[:content_text],
           post_id: attributes[:post_id],
           metadata: attributes[:metadata] || {},
-          autosaved_at: Time.current
+          autosaved_at: Time.current,
         )
+      end
+
+      def pipeline_sources
+        {
+          content_json: attributes[:content_json],
+          content_html: attributes[:content_html],
+          content_text: attributes[:content_text],
+          legacy_content: attributes[:content],
+        }
       end
     end
   end

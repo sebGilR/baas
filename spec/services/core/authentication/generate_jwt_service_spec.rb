@@ -26,7 +26,7 @@ RSpec.describe(Core::Authentication::GenerateJwtService) do
           "email" => user.email,
           "role" => "owner",
         ))
-        expect(payload["exp"]).to(be_within(1.second).of(30.minutes.from_now.to_i))
+        expect(payload["exp"]).to(be_within(1.second).of(24.hours.from_now.to_i))
         expect(payload["iat"]).to(be_within(1.second).of(Time.current.to_i))
       end
     end

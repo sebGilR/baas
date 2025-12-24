@@ -63,6 +63,8 @@ tags:
     description: Category management endpoints
   - name: API Keys
     description: API key management endpoints
+  - name: Public
+    description: Unauthenticated endpoints for public blog content
   - name: Health
     description: Health check endpoints
 
@@ -118,6 +120,116 @@ paths:
                   message:
                     type: string
                     example: Welcome to BaaS API
+
+  /api/v1/public/blogs/{slug}:
+    get:
+      tags:
+        - Public
+      summary: Fetch a public blog by slug
+      operationId: getPublicBlog
+      security: []
+      parameters:
+        - in: path
+          name: slug
+          required: true
+          schema:
+            type: string
+          description: Blog slug
+      responses:
+        '200':
+          description: Blog found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicBlog'
+        '404':
+          description: Blog not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/public/blogs/{blog_slug}/posts:
+    get:
+      tags:
+        - Public
+      summary: List published posts for a blog
+      operationId: listPublicPosts
+      security: []
+      parameters:
+        - in: path
+          name: blog_slug
+          required: true
+          schema:
+            type: string
+          description: Blog slug
+        - in: query
+          name: page[number]
+          schema:
+            type: integer
+            minimum: 1
+          description: Page number (1-indexed)
+        - in: query
+          name: page[size]
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+          description: Page size (defaults to 20)
+      responses:
+        '200':
+          description: List of published posts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PublicPost'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '404':
+          description: Blog not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/public/blogs/{blog_slug}/posts/{slug}:
+    get:
+      tags:
+        - Public
+      summary: Fetch a published post by slug
+      operationId: getPublicPost
+      security: []
+      parameters:
+        - in: path
+          name: blog_slug
+          required: true
+          schema:
+            type: string
+          description: Blog slug
+        - in: path
+          name: slug
+          required: true
+          schema:
+            type: string
+          description: Post slug
+      responses:
+        '200':
+          description: Post found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicPost'
+        '404':
+          description: Post not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   # ============================================
   # Authentication Endpoints
@@ -1457,6 +1569,31 @@ components:
                 data:
                   $ref: '#/components/schemas/ResourceIdentifier'
 
+    PublicBlog:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+              example: engineering
+            type:
+              type: string
+              example: blog
+            attributes:
+              type: object
+              properties:
+                name:
+                  type: string
+                slug:
+                  type: string
+                description:
+                  type: string
+                settings:
+                  type: object
+                  additionalProperties: true
+
     BlogCreateRequest:
       type: object
       required:
@@ -1579,6 +1716,10 @@ components:
             reading_time_minutes:
               type: integer
               example: 4
+            content_schema_version:
+              type: integer
+              example: 1
+              description: Version of the structured content schema used to render artifacts.
             metadata:
               type: object
               additionalProperties: true
@@ -1622,6 +1763,64 @@ components:
                   type: array
                   items:
                     $ref: '#/components/schemas/ResourceIdentifier'
+
+    PublicPost:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+              example: my-post
+            type:
+              type: string
+              example: post
+            attributes:
+              type: object
+              properties:
+                title:
+                  type: string
+                slug:
+                  type: string
+                excerpt:
+                  type: string
+                content_html:
+                  type: string
+                content_text:
+                  type: string
+                seo_title:
+                  type: string
+                seo_description:
+                  type: string
+                reading_time_minutes:
+                  type: integer
+                published_at:
+                  type: string
+                  format: date-time
+                updated_at:
+                  type: string
+                  format: date-time
+                content_schema_version:
+                  type: integer
+                metadata:
+                  type: object
+                  additionalProperties: true
+            relationships:
+              type: object
+              properties:
+                blog:
+                  type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                          example: blog
+                        id:
+                          type: string
+                          example: engineering
 
     PostCreateRequest:
       type: object
@@ -1801,6 +2000,10 @@ components:
               type: string
               nullable: true
               description: Plain text representation for indexing/embeddings
+            content_schema_version:
+              type: integer
+              example: 1
+              description: Version of the structured content schema used when generating artifacts
             autosaved_at:
               type: string
               format: date-time

@@ -17,7 +17,10 @@ module Publishing
           # Create a revision before updating (for content versioning)
           create_revision_if_content_changed
 
-          unless post.update(permitted_attributes)
+          post.assign_attributes(permitted_attributes)
+          RichContent::ArtifactPipeline.apply(post, pipeline_sources) if content_attributes_present?
+
+          unless post.save
             raise ActiveRecord::Rollback
           end
 
@@ -63,11 +66,28 @@ module Publishing
       end
 
       def content_attributes_changed?
-        [:content, :content_json, :content_html, :content_text].any? do |attribute|
+        content_attribute_keys.any? do |attribute|
           next unless attributes.key?(attribute)
 
           attributes[attribute] != post.public_send(attribute)
         end
+      end
+
+      def content_attributes_present?
+        content_attribute_keys.any? { |attribute| attributes.key?(attribute) }
+      end
+
+      def content_attribute_keys
+        [:content, :content_json, :content_html, :content_text]
+      end
+
+      def pipeline_sources
+        {
+          content_json: attributes[:content_json],
+          content_html: attributes[:content_html],
+          content_text: attributes[:content_text],
+          legacy_content: attributes[:content],
+        }.compact
       end
     end
   end

@@ -8,16 +8,20 @@ module Api
       set_id :public_id
       set_type :revision
 
-      attributes :title, :content, :content_json, :content_html, :content_text,
-                 :revision_number, :created_at
+      attributes :title,
+        :content,
+        :content_json,
+        :content_html,
+        :content_text,
+        :content_schema_version,
+        :revision_number,
+        :created_at
 
       attribute :metadata do |revision|
         revision.metadata || {}
       end
 
-      attribute :word_count do |revision|
-        revision.word_count
-      end
+      attribute :word_count, &:word_count
 
       belongs_to :post, serializer: PostSerializer, id_method_name: :public_id
       belongs_to :created_by, serializer: UserSerializer, id_method_name: :public_id

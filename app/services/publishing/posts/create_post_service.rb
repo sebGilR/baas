@@ -16,6 +16,7 @@ module Publishing
         return failure(errors: "User is required", code: Codes::VALIDATION_FAILED) unless user
 
         post = build_post
+        RichContent::ArtifactPipeline.apply(post, pipeline_sources)
         return failure(errors: post.errors.full_messages, code: Codes::VALIDATION_FAILED) unless post.save
 
         # Handle tags if provided
@@ -34,17 +35,13 @@ module Publishing
           author: user,
           title: attributes[:title],
           slug: attributes[:slug],
-          content: attributes[:content],
-          content_json: attributes[:content_json],
-          content_html: attributes[:content_html],
-          content_text: attributes[:content_text],
           excerpt: attributes[:excerpt],
           status: attributes[:status] || :draft,
           seo_title: attributes[:seo_title],
           seo_description: attributes[:seo_description],
           featured: attributes[:featured] || false,
           category_id: attributes[:category_id],
-          metadata: attributes[:metadata] || {}
+          metadata: attributes[:metadata] || {},
         )
       end
 
@@ -55,6 +52,15 @@ module Publishing
         tags.each do |tag|
           post.taggings.create!(account: account, tag: tag)
         end
+      end
+
+      def pipeline_sources
+        {
+          content_json: attributes[:content_json],
+          content_html: attributes[:content_html],
+          content_text: attributes[:content_text],
+          legacy_content: attributes[:content],
+        }
       end
     end
   end

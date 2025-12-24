@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 Rails.application.routes.draw do
-  mount Rswag::Ui::Engine => '/api-docs'
-  mount Rswag::Api::Engine => '/api-docs'
+  mount Rswag::Ui::Engine => "/api-docs"
+  mount Rswag::Api::Engine => "/api-docs"
   # Health check endpoint
   get "up" => "rails/health#show", as: :rails_health_check
 
@@ -12,6 +12,12 @@ Rails.application.routes.draw do
       # Health check endpoint
       get "health", to: "health#show"
       get "public", to: "public#show"
+
+      namespace :public do
+        resources :blogs, only: [:show], param: :slug do
+          resources :posts, only: [:index, :show], param: :slug
+        end
+      end
 
       # Authentication routes
       namespace :auth do
@@ -44,7 +50,6 @@ Rails.application.routes.draw do
       end
       resources :tags
       resources :categories
-
     end
   end
 end

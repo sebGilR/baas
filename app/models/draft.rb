@@ -23,7 +23,9 @@ class Draft < ApplicationRecord
   scope :by_blog, ->(blog_id) { where(blog_id: blog_id) }
 
   # Callbacks
+  before_validation :clear_rich_content_if_cleared
   before_validation :sync_legacy_content
+  before_validation :generate_rich_content_artifacts, if: :rich_content_needs_refresh?
 
   # Instance Methods
   def autosave!(title: nil, content: nil, content_json: nil, content_html: nil, content_text: nil)
@@ -33,6 +35,7 @@ class Draft < ApplicationRecord
     self.content_html = content_html unless content_html.nil?
     self.content_text = content_text unless content_text.nil?
     self.autosaved_at = Time.current
+    RichContent::ArtifactPipeline.apply(self)
     save!
   end
 
@@ -41,7 +44,7 @@ class Draft < ApplicationRecord
 
     new_post = nil
     ActiveRecord::Base.transaction do
-      new_post = Post.create!(
+      new_post = Post.new(
         account: account,
         blog: blog,
         author: author,
@@ -53,6 +56,8 @@ class Draft < ApplicationRecord
         status: :draft,
         metadata:,
       )
+      RichContent::ArtifactPipeline.apply(new_post)
+      new_post.save!
 
       # Copy tags to the new post
       tags.each do |tag|
@@ -103,5 +108,26 @@ class Draft < ApplicationRecord
     return if content.present?
 
     self.content = content_html.presence || content_text
+  end
+
+  def clear_rich_content_if_cleared
+    return unless will_save_change_to_attribute?(:content)
+    return if content.present?
+    return if content_json.present?
+
+    self.content_html = nil
+    self.content_text = nil
+  end
+
+  def rich_content_needs_refresh?
+    new_record? ||
+      will_save_change_to_attribute?(:content_json) ||
+      will_save_change_to_attribute?(:content_html) ||
+      will_save_change_to_attribute?(:content_text) ||
+      will_save_change_to_attribute?(:content)
+  end
+
+  def generate_rich_content_artifacts
+    RichContent::ArtifactPipeline.apply(self)
   end
 end

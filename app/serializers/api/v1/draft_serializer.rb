@@ -8,20 +8,23 @@ module Api
       set_id :public_id
       set_type :draft
 
-      attributes :title, :content, :content_json, :content_html, :content_text,
-                 :autosaved_at, :created_at, :updated_at
+      attributes :title,
+        :content, 
+        :content_json,
+        :content_html,
+        :content_text,
+        :content_schema_version,
+        :autosaved_at,
+        :created_at,
+        :updated_at
 
       attribute :metadata do |draft|
         draft.metadata || {}
       end
 
-      attribute :word_count do |draft|
-        draft.word_count
-      end
+      attribute :word_count, &:word_count
 
-      attribute :last_saved do |draft|
-        draft.last_saved
-      end
+      attribute :last_saved, &:last_saved
 
       belongs_to :blog, serializer: BlogSerializer, id_method_name: :public_id
       belongs_to :author, serializer: UserSerializer, id_method_name: :public_id

@@ -15,6 +15,7 @@ module Publishing
 
         # Create a revision before publishing
         post.create_revision!(user)
+        RichContent::ArtifactPipeline.apply(post)
 
         unless post.publish!
           return failure(errors: post.errors.full_messages, code: Codes::VALIDATION_FAILED)

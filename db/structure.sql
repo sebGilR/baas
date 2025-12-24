@@ -294,7 +294,8 @@ CREATE TABLE public.drafts (
     updated_at timestamp(6) without time zone NOT NULL,
     content_json jsonb,
     content_html text,
-    content_text text
+    content_text text,
+    content_schema_version integer DEFAULT 1 NOT NULL
 );
 
 
@@ -344,7 +345,8 @@ CREATE TABLE public.posts (
     category_id bigint,
     content_json jsonb,
     content_html text,
-    content_text text
+    content_text text,
+    content_schema_version integer DEFAULT 1 NOT NULL
 );
 
 
@@ -423,7 +425,8 @@ CREATE TABLE public.revisions (
     updated_at timestamp(6) without time zone NOT NULL,
     content_json jsonb,
     content_html text,
-    content_text text
+    content_text text,
+    content_schema_version integer DEFAULT 1 NOT NULL
 );
 
 
@@ -1351,6 +1354,7 @@ ALTER TABLE ONLY public.posts
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20251223010101'),
 ('20251221231924'),
 ('20251206173009'),
 ('20251130203859'),

@@ -16,16 +16,17 @@ class Post < ApplicationRecord
 
   # Validations
   validates :title, presence: true, length: { minimum: 1, maximum: 255 }
-  validates :slug, presence: true,
-                   uniqueness: { scope: :account_id, message: "has already been taken for this account" },
-                   format: { with: /\A[a-z0-9-]+\z/, message: "only lowercase letters, numbers, and hyphens" }
+  validates :slug,
+    presence: true,
+    uniqueness: { scope: :account_id, message: "has already been taken for this account" },
+    format: { with: /\A[a-z0-9-]+\z/, message: "only lowercase letters, numbers, and hyphens" }
   validate :rich_content_presence, on: :publish
 
   # Enums
   enum :status, { draft: 0, published: 1, scheduled: 2, archived: 3 }, prefix: true
 
   # Scopes
-  scope :published, -> { where(status: :published).where("published_at <= ?", Time.current) }
+  scope :published, -> { where(status: :published).where(published_at: ..Time.current) }
   scope :scheduled, -> { where(status: :scheduled).where("scheduled_for > ?", Time.current) }
   scope :drafts, -> { where(status: :draft) }
   scope :featured, -> { where(featured: true) }
@@ -36,6 +37,7 @@ class Post < ApplicationRecord
   # Callbacks
   before_validation :generate_slug, on: :create
   before_validation :sync_legacy_content
+  before_validation :generate_rich_content_artifacts, if: :rich_content_needs_refresh?
   before_save :calculate_reading_time
   before_save :set_excerpt
 
@@ -74,16 +76,17 @@ class Post < ApplicationRecord
   end
 
   def create_revision!(user)
-    revisions.create!(
-      account: account,
-      title: title,
-      content: content,
-      content_json: content_json,
-      content_html: content_html,
-      content_text: content_text,
-      revision_number: next_revision_number,
-      created_by: user
-    )
+      revisions.create!(
+        account: account,
+        title: title,
+        content: content,
+        content_json: content_json,
+        content_html: content_html,
+        content_text: content_text,
+        content_schema_version: content_schema_version,
+        revision_number: next_revision_number,
+        created_by: user,
+      )
   end
 
   private
@@ -155,5 +158,17 @@ class Post < ApplicationRecord
     return if content.present?
 
     self.content = content_html.presence || content_text
+  end
+
+  def rich_content_needs_refresh?
+    new_record? ||
+      will_save_change_to_attribute?(:content_json) ||
+      will_save_change_to_attribute?(:content_html) ||
+      will_save_change_to_attribute?(:content_text) ||
+      will_save_change_to_attribute?(:content)
+  end
+
+  def generate_rich_content_artifacts
+    RichContent::ArtifactPipeline.apply(self)
   end
 end
