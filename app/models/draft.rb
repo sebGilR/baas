@@ -20,7 +20,15 @@ class Draft < ApplicationRecord
   scope :ordered, -> { order(updated_at: :desc) }
   scope :recent, -> { where("updated_at > ?", 24.hours.ago) }
   scope :by_author, ->(author_id) { where(author_id: author_id) }
-  scope :by_blog, ->(blog_id) { where(blog_id: blog_id) }
+  scope :by_blog, lambda { |identifier|
+    if identifier.is_a?(Blog)
+      where(blog: identifier)
+    elsif identifier.to_s.match?(/\A\d+\z/)
+      where(blog_id: identifier)
+    else
+      joins(:blog).where(blogs: { public_id: identifier })
+    end
+  }
 
   # Callbacks
   before_validation :clear_rich_content_if_cleared

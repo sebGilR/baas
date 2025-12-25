@@ -116,6 +116,24 @@ RSpec.describe(Post, type: :model) do
         expect(described_class.featured).not_to(include(regular_post))
       end
     end
+
+    describe ".by_blog" do
+      let(:other_blog) { create(:blog, account: account) }
+      let!(:matching_post) { create(:post, blog: blog, account: account, author: author) }
+      let!(:other_post) { create(:post, blog: other_blog, account: account, author: author) }
+
+      it "filters by blog public_id" do
+        results = described_class.by_blog(blog.public_id)
+        expect(results).to(include(matching_post))
+        expect(results).not_to(include(other_post))
+      end
+
+      it "filters by numeric blog_id" do
+        results = described_class.by_blog(blog.id)
+        expect(results).to(include(matching_post))
+        expect(results).not_to(include(other_post))
+      end
+    end
   end
 
   describe "instance methods" do

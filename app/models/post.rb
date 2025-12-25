@@ -30,7 +30,15 @@ class Post < ApplicationRecord
   scope :scheduled, -> { where(status: :scheduled).where("scheduled_for > ?", Time.current) }
   scope :drafts, -> { where(status: :draft) }
   scope :featured, -> { where(featured: true) }
-  scope :by_blog, ->(blog_id) { where(blog_id: blog_id) }
+  scope :by_blog, lambda { |identifier|
+    if identifier.is_a?(Blog)
+      where(blog: identifier)
+    elsif identifier.to_s.match?(/\A\d+\z/)
+      where(blog_id: identifier)
+    else
+      joins(:blog).where(blogs: { public_id: identifier })
+    end
+  }
   scope :ordered, -> { order(created_at: :desc) }
   scope :by_published_date, -> { order(published_at: :desc) }
 

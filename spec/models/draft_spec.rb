@@ -52,6 +52,24 @@ RSpec.describe(Draft, type: :model) do
         expect(described_class.by_author(author.id)).not_to(include(other_draft))
       end
     end
+
+    describe ".by_blog" do
+      let(:other_blog) { create(:blog, account: account) }
+      let!(:matching_draft) { create(:draft, account: account, blog: blog, author: author) }
+      let!(:other_draft) { create(:draft, account: account, blog: other_blog, author: author) }
+
+      it "filters by blog public_id" do
+        results = described_class.by_blog(blog.public_id)
+        expect(results).to(include(matching_draft))
+        expect(results).not_to(include(other_draft))
+      end
+
+      it "filters by numeric blog_id" do
+        results = described_class.by_blog(blog.id)
+        expect(results).to(include(matching_draft))
+        expect(results).not_to(include(other_draft))
+      end
+    end
   end
 
   describe "instance methods" do
