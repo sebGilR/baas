@@ -23,3 +23,9 @@
 
 # Register JSON:API MIME type
 Mime::Type.register("application/vnd.api+json", :jsonapi)
+
+# Configure Rails to parse JSON:API request bodies into params
+# This tells Rails to treat application/vnd.api+json the same as application/json
+# so that params[:data] and nested attributes are properly parsed
+json_parser = ActionDispatch::Request.parameter_parsers[Mime[:json].symbol]
+ActionDispatch::Request.parameter_parsers[Mime[:jsonapi].symbol] = json_parser
