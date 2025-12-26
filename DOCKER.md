@@ -205,6 +205,12 @@ See the main [README.md](../README.md) for detailed architecture documentation.
 # Shell into web container
 docker compose exec web bash
 
+# Tail Sidekiq worker logs
+docker compose logs -f worker
+
+# Restart Sidekiq worker
+docker compose restart worker
+
 # Run bundle audit
 docker compose exec web bundle exec bundle-audit check
 

@@ -66,6 +66,31 @@ services:
         bin/rails server -b 0.0.0.0
       "
 
+  # Background jobs (Sidekiq)
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      RAILS_ENV: development
+      DATABASE_URL: postgres://postgres:postgres@db:5432/baas_development
+      DATABASE_HOST: db
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
+      REDIS_URL: redis://redis:6379/0
+      RAILS_LOG_TO_STDOUT: "true"
+    volumes:
+      - .:/rails
+      - rails_cache:/rails/tmp/cache
+      - rails_storage:/rails/storage
+    command: bundle exec sidekiq -C config/sidekiq.yml
+
   # Test runner service
   test:
     build:

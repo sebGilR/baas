@@ -37,6 +37,9 @@ Rails.application.configure do
   # Prevent health checks from clogging up the logs.
   config.silence_healthcheck_path = "/up"
 
+  # Background jobs
+  config.active_job.queue_adapter = :sidekiq
+
   # Don't log any deprecations.
   config.active_support.report_deprecations = false
 

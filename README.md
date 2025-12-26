@@ -297,9 +297,32 @@ JWT_EXPIRATION_HOURS=24
 
 # CORS
 CORS_ORIGINS=http://localhost:3001,http://localhost:3000
+
+# Next.js ISR revalidation (optional)
+VERCEL_REVALIDATE_URL=http://localhost:3001/api/revalidate
+VERCEL_REVALIDATE_TOKEN=your_revalidate_token
 ```
 
 ## 🚢 Deployment
+
+For the Fly.io + Sidekiq + Redis + external Postgres deployment plan (and Vercel revalidation wiring),
+see `deploy_plan.md`.
+
+### Fly/Vercel Env Var Checklist
+
+**Rails (Fly secrets / env):**
+- `RAILS_MASTER_KEY`
+- `DATABASE_URL` (DigitalOcean managed Postgres)
+- `REDIS_URL` (Upstash)
+- `CORS_ORIGINS` (comma-separated; include your Vercel domains)
+- `VERCEL_REVALIDATE_URL` (e.g. `https://engineeringwithsebs.com/api/revalidate`)
+- `VERCEL_REVALIDATE_TOKEN` (shared with Vercel)
+
+**Next.js (Vercel env vars):**
+- `BAAS_API_URL` (Fly URL for Rails)
+- `NEXT_PUBLIC_SITE_URL`
+- `NEXT_PUBLIC_BLOG_SLUG`
+- `VERCEL_REVALIDATE_TOKEN` (shared with Fly)
 
 ### Docker Production Build
 
@@ -307,8 +330,23 @@ CORS_ORIGINS=http://localhost:3001,http://localhost:3000
 # Build production image
 docker build -t baas:production .
 
-# Run with environment variables
-docker run -e RAILS_ENV=production -e DATABASE_URL=... -p 3000:3000 baas:production
+# Run the web process (API)
+docker run \
+  -e RAILS_ENV=production \
+  -e RAILS_MASTER_KEY=... \
+  -e DATABASE_URL=... \
+  -e REDIS_URL=... \
+  -p 3000:3000 \
+  baas:production
+
+# Run the worker process (Sidekiq)
+docker run \
+  -e RAILS_ENV=production \
+  -e RAILS_MASTER_KEY=... \
+  -e DATABASE_URL=... \
+  -e REDIS_URL=... \
+  baas:production \
+  bundle exec sidekiq -C config/sidekiq.yml
 ```
 
 ### Kamal (Coming Soon)

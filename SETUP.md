@@ -115,8 +115,9 @@ gem "acts-as-tenant", "~> 0.5.1"
 gem "jwt", "~> 2.7"
 gem "bcrypt", "~> 3.1"
 
-# Background Jobs (undecided - adding popular option)
-gem "solid_queue", "~> 0.3"
+# Background Jobs
+gem "sidekiq", "~> 7.0"
+gem "sidekiq-cron", "~> 1.12"
 
 # Caching
 gem "redis", "~> 5.0"
@@ -506,8 +507,8 @@ bundle exec brakeman
 # Start the Rails server
 rails s -p 3000
 
-# In another terminal, optionally start Solid Queue worker (when background jobs are configured)
-# bundle exec rake solid_queue:start
+# In another terminal, optionally start Sidekiq (when background jobs are configured)
+# bundle exec sidekiq -C config/sidekiq.yml
 ```
 
 Expected output:

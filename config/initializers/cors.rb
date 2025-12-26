@@ -9,8 +9,14 @@
 
 Rails.application.config.middleware.insert_before(0, Rack::Cors) do
   allow do
-    # Configure origins for development (adjust for production)
-    origins "localhost:3000", "localhost:3001", "127.0.0.1:3000"
+    origins do |origin, _env|
+      allowed = ENV.fetch("CORS_ORIGINS", "http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000")
+        .split(",")
+        .map(&:strip)
+        .reject(&:empty?)
+
+      allowed.any? { |allowed_origin| allowed_origin == origin }
+    end
 
     resource "*",
       headers: :any,

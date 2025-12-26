@@ -25,7 +25,8 @@ gem "bcrypt", "~> 3.1"
 gem "jwt", "~> 3.1"
 
 # Background Jobs
-gem "solid_queue", "~> 1.2"
+gem "sidekiq", "~> 7.0"
+gem "sidekiq-cron", "~> 1.12"
 
 # Caching
 gem "redis", "~> 5.0"

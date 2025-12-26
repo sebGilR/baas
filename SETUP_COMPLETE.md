@@ -138,6 +138,8 @@ app/
    - [ ] Production environment setup
    - [ ] Monitoring and logging
 
+   See `deploy_plan.md` for the target deployment plan (Fly.io + Sidekiq + Upstash + DigitalOcean Postgres + Vercel revalidation).
+
 ## 🔍 How to Verify Setup
 
 ```bash
